@@ -1,0 +1,2657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UZAYLI DONDURMA IMPARATORLUGU</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none;
+            border-radius: 0 !important;
+            font-family: 'Press Start 2P', monospace;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+            color: #ffffff;
+        }
+        #game-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            z-index: 1;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .ut-box {
+            background-color: #000000;
+            border: 4px solid #ffffff;
+            box-shadow: 0 0 0 2px #000000;
+            color: #ffffff;
+        }
+        .ut-btn {
+            background-color: #000000;
+            border: 3px solid #ffffff;
+            color: #ffffff;
+            padding: 7px 9px;
+            font-size: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            text-transform: uppercase;
+        }
+        .ut-btn:active {
+            background-color: #ffff00;
+            color: #000000;
+            border-color: #ffff00;
+        }
+        .ut-btn-orange { border-color: #ff8800; color: #ff8800; }
+        .ut-btn-orange:active { background-color: #ff8800; color: #000000; }
+        .ut-btn-green { border-color: #00ff66; color: #00ff66; }
+        .ut-btn-green:active { background-color: #00ff66; color: #000000; }
+        .ut-btn-cyan { border-color: #00ffff; color: #00ffff; }
+        .ut-btn-cyan:active { background-color: #00ffff; color: #000000; }
+        .ut-btn-red { border-color: #ff3333; color: #ff3333; }
+        .ut-btn-red:active { background-color: #ff3333; color: #000000; }
+        .ut-btn-yellow { border-color: #ffff00; color: #ffff00; }
+        .ut-btn-yellow:active { background-color: #ffff00; color: #000000; }
+
+        #portrait-lock {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000000;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            border: 6px solid #ffffff;
+        }
+        @media screen and (orientation: portrait) {
+            #portrait-lock { display: flex !important; }
+        }
+
+        #poison-vignette {
+            display: none;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4;
+            border: 8px solid #00ff44;
+            box-shadow: inset 0 0 40px rgba(0, 255, 68, 0.45);
+            animation: poisonBlink 1s steps(2, end) infinite;
+        }
+        @keyframes poisonBlink {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 0.3; }
+        }
+
+        #joy-area {
+            position: fixed;
+            bottom: 14px;
+            left: 14px;
+            width: 114px;
+            height: 114px;
+            z-index: 20;
+        }
+        #joy-frame {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.82);
+            border: 4px solid #ffffff;
+            position: relative;
+        }
+        #joy-frame::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            background: #444444;
+            transform: translateY(-50%);
+        }
+        #joy-frame::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: #444444;
+            transform: translateX(-50%);
+        }
+        #joy-knob {
+            width: 36px;
+            height: 36px;
+            background: #ff2222;
+            border: 3px solid #ffffff;
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            z-index: 2;
+        }
+
+        #action-pad {
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 7px;
+        }
+        .retro-pad-btn {
+            min-width: 90px;
+            height: 40px;
+            background: #000000;
+            border: 3px solid #ffffff;
+            color: #ffffff;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0 8px;
+        }
+        .retro-pad-btn:active {
+            background: #ffff00;
+            color: #000000;
+            border-color: #ffff00;
+        }
+        #btn-z {
+            border: 4px solid #ffff00;
+            color: #ffff00;
+            height: 48px;
+            min-width: 156px;
+            font-size: 9px;
+        }
+        #btn-z:active {
+            background: #ffff00;
+            color: #000000;
+        }
+
+        #top-hud {
+            position: fixed;
+            top: 6px;
+            left: 6px;
+            right: 6px;
+            z-index: 15;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .hud-panel {
+            pointer-events: auto;
+            background: #000000;
+            border: 3px solid #ffffff;
+            padding: 5px 8px;
+            font-size: 7px;
+            line-height: 1.5;
+        }
+        .hp-bar-wrap {
+            display: inline-block;
+            width: 58px;
+            height: 9px;
+            background: #ff0000;
+            border: 2px solid #ffffff;
+            vertical-align: middle;
+            margin: 0 3px;
+        }
+        .hp-bar-fill {
+            height: 100%;
+            background: #ffff00;
+            width: 100%;
+        }
+
+        #dialogue-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 45;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 12px;
+        }
+        #dialogue-box {
+            width: 100%;
+            max-width: 700px;
+            min-height: 126px;
+            background: #000000;
+            border: 4px solid #ffffff;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        #dialogue-portrait {
+            width: 68px;
+            height: 68px;
+            border: 3px solid #ffffff;
+            background: #111111;
+            flex-shrink: 0;
+        }
+        #dialogue-text {
+            font-size: 9px;
+            line-height: 1.7;
+            color: #ffffff;
+            white-space: pre-wrap;
+            flex: 1;
+        }
+
+        #menu-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 35;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        #menu-window {
+            width: 100%;
+            max-width: 680px;
+            max-height: 88vh;
+            background: #000000;
+            border: 4px solid #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        #menu-body {
+            overflow-y: auto;
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding-right: 4px;
+        }
+        .item-row {
+            border: 2px solid #666666;
+            padding: 7px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #080808;
+        }
+        .sprite-icon {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #444444;
+            background: #000000;
+            flex-shrink: 0;
+        }
+        .slot-card {
+            border: 3px solid #ffffff;
+            padding: 9px;
+            background: #080808;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            text-align: left;
+        }
+        input[type="text"] {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            touch-action: auto !important;
+            background: #000000;
+            border: 3px solid #ffffff;
+            color: #ffff00;
+            padding: 9px;
+            font-size: 11px;
+            text-align: center;
+            text-transform: uppercase;
+            outline: none;
+            width: 100%;
+        }
+        input[type="text"]:focus { border-color: #ffff00; }
+
+        #pixel-toast {
+            display: none;
+            position: fixed;
+            top: 66px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 48;
+            background: #000000;
+            border: 3px solid #ffff00;
+            color: #ffff00;
+            padding: 7px 12px;
+            font-size: 8px;
+            text-align: center;
+            max-width: 92vw;
+        }
+
+        #ending-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            background: #000000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="portrait-lock">
+        <canvas id="rotate-sprite" width="16" height="16" style="width:76px;height:76px;margin-bottom:14px;"></canvas>
+        <div style="color:#ffff00;font-size:11px;line-height:1.7;margin-bottom:8px;">* TELEFONU YATAY CEVIRIN!</div>
+        <div style="color:#aaaaaa;font-size:8px;line-height:1.7;">BU OYUN SADECE YATAY EKRAN VE MOBIL DOKUNMATIK KONTROLLERLE CALISIR.</div>
+    </div>
+
+    <div id="poison-vignette"></div>
+    <canvas id="game-canvas"></canvas>
+
+    <div id="title-screen" style="position:fixed;inset:0;z-index:50;background:#000000;display:flex;align-items:center;justify-content:center;padding:10px;overflow-y:auto;">
+        <div class="ut-box" style="max-width:650px;width:100%;padding:12px;text-align:center;">
+            <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:6px;">
+                <canvas id="title-spr-1" width="16" height="16" style="width:30px;height:30px;"></canvas>
+                <div>
+                    <div style="font-size:12px;color:#ffff00;line-height:1.4;">UZAYLI DONDURMA</div>
+                    <div style="font-size:9px;color:#00ffff;line-height:1.4;">IMPARATORLUGU</div>
+                </div>
+                <canvas id="title-spr-2" width="16" height="16" style="width:30px;height:30px;"></canvas>
+            </div>
+            <div id="save-slots-container" style="display:flex;flex-direction:column;gap:7px;margin-top:8px;"></div>
+            <div id="new-name-panel" style="display:none;margin-top:9px;border-top:3px solid #ffffff;padding-top:9px;">
+                <div id="selected-slot-label" style="font-size:8px;color:#00ff66;margin-bottom:7px;">* SLOT 1 ICIN ISIM GIRIN:</div>
+                <div style="display:flex;gap:6px;">
+                    <input type="text" id="name-input" maxlength="10" placeholder="ISIM...">
+                    <button id="btn-confirm-start" class="ut-btn ut-btn-green" style="min-width:110px;">BASLA</button>
+                    <button id="btn-cancel-name" class="ut-btn ut-btn-red">IPTAL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ending-overlay">
+        <div class="ut-box" style="max-width:600px;width:100%;padding:18px;text-align:center;">
+            <canvas id="ending-portrait" width="16" height="16" style="width:64px;height:64px;border:3px solid #ffff00;margin-bottom:10px;"></canvas>
+            <div id="ending-badge" style="font-size:9px;color:#00ffff;margin-bottom:6px;">* SON 1 / 3 TAMAMLANDI *</div>
+            <div id="ending-title" style="font-size:13px;color:#ffff00;line-height:1.5;margin-bottom:10px;">SON BASLIGI</div>
+            <div id="ending-desc" style="font-size:8px;color:#ffffff;line-height:1.8;margin-bottom:14px;">ACIKLAMA</div>
+            <div style="display:flex;justify-content:center;gap:10px;">
+                <button id="btn-ending-continue" class="ut-btn ut-btn-green">OYUNA DEVAM ET</button>
+                <button id="btn-ending-slots" class="ut-btn ut-btn-orange">KAYIT SLOTLARI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="top-hud" style="display:none;">
+        <div class="hud-panel" style="display:flex;align-items:center;gap:7px;">
+            <canvas id="hud-face" width="16" height="16" style="width:28px;height:28px;border:2px solid #fff;"></canvas>
+            <div>
+                <div>
+                    <span id="hud-name" style="color:#ffffff;">KASIF</span>
+                    <span id="hud-gene-tag" style="color:#aaaaaa;margin-left:4px;">[FAKIR]</span>
+                </div>
+                <div style="margin-top:2px;">
+                    <span>HP</span>
+                    <span class="hp-bar-wrap"><span id="hud-hp-fill" class="hp-bar-fill"></span></span>
+                    <span id="hud-hp-num" style="color:#ffff00;">20/20</span>
+                    <span id="hud-planet-tag" style="color:#00ffff;margin-left:5px;">[DUNYA]</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-panel" style="text-align:right;">
+            <div style="color:#ffff00;">ALTIN: <span id="hud-gold">50</span>$ | STOK: <span id="hud-restock-timer" style="color:#00ff66;">30s</span></div>
+            <div style="margin-top:3px;display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;">
+                <button id="btn-hud-map" class="ut-btn ut-btn-yellow" style="padding:3px 5px;font-size:6.5px;">HARITA</button>
+                <button id="btn-hud-upgrades" class="ut-btn ut-btn-green" style="padding:3px 5px;font-size:6.5px;">YUKSELT</button>
+                <button id="btn-hud-ach" class="ut-btn ut-btn-yellow" style="padding:3px 5px;font-size:6.5px;">BASARIM</button>
+                <button id="btn-hud-pet" class="ut-btn ut-btn-cyan" style="padding:3px 5px;font-size:6.5px;">PET SHOP</button>
+                <button id="btn-hud-cocop" class="ut-btn ut-btn-orange" style="padding:3px 5px;font-size:6.5px;">COCOP</button>
+                <button id="btn-hud-save" class="ut-btn" style="padding:3px 5px;font-size:6.5px;">KAYIT</button>
+                <button id="btn-hud-mute" class="ut-btn" style="padding:3px 5px;font-size:6.5px;">SES:ACIK</button>
+                <button id="btn-hud-menu" class="ut-btn ut-btn-orange" style="padding:3px 5px;font-size:6.5px;">SLOT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quest-strip" style="display:none;position:fixed;top:52px;left:6px;z-index:14;background:#000000;border:2px solid #555555;padding:3px 7px;font-size:6.5px;color:#00ffff;pointer-events:none;max-width:72vw;">
+        * <span id="quest-text">YERDEKI NOTU INCELE</span>
+    </div>
+
+    <div id="pixel-toast"></div>
+
+    <div id="mobile-controls" style="display:none;">
+        <div id="joy-area">
+            <div id="joy-frame">
+                <div id="joy-knob"></div>
+            </div>
+        </div>
+        <div id="action-pad">
+            <button id="btn-z" class="retro-pad-btn" style="display:none;">[Z] ETKILESIM</button>
+            <div style="display:flex;gap:5px;">
+                <button id="btn-m" class="retro-pad-btn" style="border-color:#ffff00;color:#ffff00;">[M] HARITA</button>
+                <button id="btn-x" class="retro-pad-btn">[X] CANTA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialogue-overlay">
+        <div id="dialogue-box">
+            <canvas id="dialogue-portrait" width="16" height="16"></canvas>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:88px;">
+                <div id="dialogue-text"></div>
+                <div id="dialogue-controls" style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+                    <button id="btn-dialogue-next" class="ut-btn ut-btn-yellow" style="padding:6px 10px;font-size:8px;">[Z] DEVAM &gt;</button>
+                    <button id="btn-choice-yes" class="ut-btn ut-btn-green" style="display:none;padding:7px 14px;font-size:9px;">* EVET</button>
+                    <button id="btn-choice-no" class="ut-btn ut-btn-red" style="display:none;padding:7px 14px;font-size:9px;">* HAYIR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu-modal">
+        <div id="menu-window">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #ffffff;padding-bottom:6px;">
+                <div id="menu-title" style="font-size:9px;color:#ffff00;">MENU</div>
+                <button id="btn-menu-close" class="ut-btn ut-btn-red" style="padding:4px 8px;font-size:8px;">[X] KAPAT</button>
+            </div>
+            <div id="menu-body"></div>
+        </div>
+    </div>
+
+<script>
+(function lockDesktopInputs() {
+    const block = (e) => {
+        if (e.target && (e.target.id === 'name-input' || e.target.id === 'shop-name-input')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
+    window.addEventListener('keydown', block, { capture: true, passive: false });
+    window.addEventListener('keyup', block, { capture: true, passive: false });
+    window.addEventListener('keypress', block, { capture: true, passive: false });
+    window.addEventListener('contextmenu', block, { capture: true, passive: false });
+    window.addEventListener('wheel', block, { capture: true, passive: false });
+    window.addEventListener('mousedown', (e) => {
+        if (e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT')) return;
+        e.preventDefault();
+        e.stopPropagation();
+    }, { capture: true, passive: false });
+})();
+
+const PALETTE = {
+    '.': null, 'K': '#000000', 'W': '#ffffff', 'Y': '#ffff00', 'O': '#ff8800', 'R': '#ff2222', 'G': '#00ff55', 'D': '#008833', 'B': '#2288ff', 'C': '#00ffff', 'P': '#cc44ff', 'M': '#ff44aa', 'S': '#ffcc99', 'H': '#664422', 'A': '#777788'
+};
+
+const SPRITES_16 = {
+    human: [
+        "....KKKKKK......", "...KHHHHHHK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKAAAAAAKK....", ".KAAAAAAAAAAK...", ".KAAAAAAAAAAK...", ".KSKAAAAAAKSK...", "..KKBBBBBBKK....", "...KBB..BBK.....", "...KBB..BBK.....", "...KHH..HHK.....", "................", "................"
+    ],
+    alien: [
+        "...KK....KK.....", "...KGK..KGK.....", "....KGKKGK......", "..KKGGGGGGKK....", ".KGGGGGGGGGGK...", ".KGKKGGGGKKGK...", ".KGKKGGGGKKGK...", "..KGGGGGGGGK....", "...KKGGGGKK.....", "..KKCCCCCCKK....", ".KCCCCCCCCCCK...", ".KGKCCCCCCKGK...", "..KKPPPPPPKK....", "...KPP..PPK.....", "...KCC..CCK.....", "................"
+    ],
+    neighbor: [
+        "....KKKKKK......", "...KYYYYYYK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKDDDDDKK.....", ".KDDDDDDDDDDK...", ".KDDDDDDDDDDK...", ".KSKDDDDDDKSK...", "..KKHHHHHHKK....", "...KHH..HHK.....", "...KHH..HHK.....", "................", "................", "................"
+    ],
+    customer_alien: [
+        ".....KKKK.......", "    KPPPPK......", "...KPPPPPPK.....", "..KPPKPPKPPK....", "..KPPPPPPPPK....", "...KPPKKPPK.....", "..KKYYYYYYKK....", ".KYYYYYYYYYYK...", ".KPKYYYYYYKPK...", "..KKBBBBBBKK....", "...KBB..BBK.....", "................", "................", "................", "................", "................"
+    ],
+    cow_merchant: [
+        "....KKKKKK......", "...KOOOOOOK.....", "..KPPPPPPPPK....", "..KPKPPPPKPK....", "..KPPPPPPPPK....", "...KPPPPPPK.....", "..KKHHHHHHKK....", ".KHHHHHHHHHHK...", ".KHHYYYYYYHHK...", ".KPKHHHHHHKPK...", "..KKHHHHHHKK....", "...KHH..HHK.....", "................", "................", "................", "................"
+    ],
+    seed_merchant: [
+        ".....KKKK.......", "    KGGGGK......", "...KGGGGGGK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "..KKDDDDDDKK....", ".KDDDDDDDDDDK...", ".KDDGGGGGGDDK...", ".KSKDDDDDDKSK...", "..KKHHHHHHKK....", "...KHH..HHK.....", "................", "................", "................", "................"
+    ],
+    gear_merchant: [
+        "....KKKKKK......", "...KCCCCCCK.....", "..KSSSSSSSSK....", "..KSKCCCCKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKOOOOOOKK....", ".KOOOOOOOOOOK...", ".KOOYYYYYYOOK...", ".KSKOOOOOOKSK...", "..KKAAAAAAKK....", "...KAA..AAK.....", "................", "................", "................", "................"
+    ],
+    craft_master: [
+        "....KKKKKK......", "...KRRRRRRK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKHHHHHHKK....", ".KHHHHHHHHHHK...", ".KHHAAAAAAHHK...", ".KSKHHHHHHKSK...", "..KKAAAAAAKK....", "...KAA..AAK.....", "................", "................", "................", "................"
+    ],
+    pet_shop_owner: [
+        "....KKKKKK......", "...KMMMMMMK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKPPPPPPKK....", ".KPPPPPPPPPPK...", ".KPPMMMMMMPPK...", ".KPKPPPPPPKPK...", "..KKPPPPPPKK....", "...KPP..PPK.....", "................", "................", "................", "................"
+    ],
+    cocop_broker: [
+        "....KKKKKK......", "...KYYYYYYK.....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "..KSSSSSSSSK....", "...KSSSSSSK.....", "..KKEEEEEEKK....", ".KEEEEEEEEEEK...", ".KEECCCCCEEEK...", ".KSKEEEEEKSK....", "..KKAAAAAAKK....", "...KAA..AAK.....", "................", "................", "................", "................"
+    ],
+    pet_cat: [
+        "......KK........", "     KOOOK......", "    KOOOOOOK....", "...KOOWOOWOOK...", "...KOOOOOOOOK...", "    KOPOPOK.....", "     KOOOK......", "      KK........", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    pet_monster: [
+        ".....KKKK.......", "    KPPPPK......", "...KPYYYYPK.....", "..KPYKKKKPYK....", "..KPYYYYYYPK....", "..KPPGGGGPPK....", "...KPPPPPPK.....", "    KKKKKK......", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    pet_snail: [
+        ".......KK.......", "     KKCCKK.....", "    KCCCCCCK....", "...KCCCCCCCCK...", "...KKKKKKKKKK...", "..KWWWWWWWWK....", ".KWWKWWWWKWWK...", "................", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    cow_purple: [
+        "..KK......KK....", ".KWWK    KWWK...", ".KPPPPPPPPPPK...", "KPPKKPPPPKKPPK..", "KPPPPPPPPPPPPK..", "KPPPMMMMMMPPPK..", "KPPPMKMMKMPPPK..", ".KPPPMMMMPPPK...", "..KPPPPPPPPK....", "..KPPWWWWPPK....", "..KPP    PPK....", "..KKK    KKK....", "................", "................", "................", "................"
+    ],
+    cow_crystal: [
+        "..KK      KK....", ".KCCK    KCCK...", ".KCCCCCCCCCCK...", "KCCKKCCCCKKCCK..", "KCCCCCCCCCCCCK..", "KCCCBBBBBBCCCK..", "KCCCBKBBKBCCCK..", ".KCCCBBBBCCCK...", "..KCCCCCCCCK....", "..KCCWWWWCCK....", "..KCC    CCK....", "..KKK    KKK....", "................", "................", "................", "................"
+    ],
+    cow_magma: [
+        "..KK      KK....", ".KYYK    KYYK...", ".KRRRRRRRRRRK...", "KRRKKRRRRKKRRK..", "KRRRRRRRRRRRRK..", "KRRROOOOOORRRK..", "KRRROKOOOKRRRK..", ".KRRROOOORRRK...", "..KRRRRRRRRK....", "..KRRYYYYRRK....", "..KRR    RRK....", "..KKK    KKK....", "................", "................", "................", "................"
+    ],
+    milk: [
+        ".....KKKK.......", "    KWWWWK......", "    KCCCCK......", "     KWWK.......", "    KWWWWK......", "...KWWWWWWK.....", "...KWCCCCWK.....", "...KWCCCCWK.....", "...KWCCCCWK.....", "...KWWWWWWK.....", "    KKKKKK......", "................", "................", "................", "................", "................"
+    ],
+    fruit_star: [
+        "......KK........", "     KGGK.......", "    KGGGGK......", "...KMMMMMMK.....", "..KMMYMMMMMK....", "..KMMMMMMYMK....", "..KMMYMMMMMK....", "...KMMMMMMK.....", "    KMMMMK......", "     KMMK.......", "      KK........", "................", "................", "................", "................", "................"
+    ],
+    fruit_melon: [
+        ".....KKKK.......", "    KDDDDK......", "...KGGGGGGK.....", "..KGGYGGYGGK....", "..KGGGGGGGGK....", "..KGYGGGGYGK....", "...KGGGGGGK.....", "    KDDDDK......", "     KKKK.......", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    fruit_ice: [
+        "......KK........", "     KCCK.......", "    KCCCCK......", "...KBBBBBBK.....", "..KBBWBBBBBK....", "..KBBBBBBWBK....", "...KBBBBBBK.....", "    KBBBBK......", "     KKKK.......", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    fruit_dragon: [
+        "......KK........", "     KYYK.......", "    KRRRRK......", "...KROOOORK.....", "..KROYYYYORK....", "..KROYYYYORK....", "...KROOOORK.....", "    KRRRRK......", "     KKKK.......", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    bucket: [
+        "....KKKKKK......", "...KAAAAAAK.....", "..KAK    KAK....", "..KKKKKKKKKK....", "..KBBBBBBBBK....", "..KBCCCCCCBK....", "..KBCCCCCCBK....", "...KBBBBBBK.....", "    KKKKKK......", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    sprinkler: [
+        "......KK........", "    KKCCKK......", "..KKCCCCCCKK....", "    KKYYKK......", "     KAAK.......", "     KAAK.......", "    KAAAAK......", "...KKKKKKKK.....", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    pickaxe: [
+        "....KKKKKK......", "..KKCCCCCCKK....", ".KCCKKKKKKCCK...", ".KCK  KHHK KCK..", "..K  KHHK  K....", "      KHHK......", "      KHHK......", "      KHHK......", "      KHHK......", "       KK.......", "................", "................", "................", "................", "................", "................"
+    ],
+    crystal_ore: [
+        "......KK........", "     KCCK.......", "    KCCCCK......", "...KCCWCCCK.....", "..KCCWCCCCCK....", "..KCCCCCCCCK....", "...KCCCCCCK.....", "    KKKKKK......", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    machine: [
+        "..KKKKKKKKKK....", ".KAAAAAAAAAAK...", ".KACCCCCCCCAK...", ".KACGGGGGGCAK...", ".KACCCCCCCCAK...", ".KAAAAAAAAAAK...", ".KAYYAAAAYYAK...", ".KAAAAAAAAAAK...", "..KKKKKKKKKK....", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    cone: [
+        "....KKKKKK......", "...KOOOOOOK.....", "...KOHOHOHK.....", "    KOOOOK......", "    KOHOHK......", "     KOOK.......", "     KHHK.......", "      KK........", "................", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    potion: [
+        ".....KKKK.......", "     KHHK.......", "    KWWWWK......", "...KGGGGGGK.....", "..KGGWGGGGGK....", "..KGGGGGGGGK....", "..KGGGGGGGGK....", "...KGGGGGGK.....", "    KKKKKK......", "................", "................", "................", "................", "................", "................", "................"
+    ],
+    icecream: [
+        ".....KKKK.......", "    KMMMMK......", "...KMMWWMMK.....", "...KCCCCCCK.....", "..KCCYYYYCCK....", "...KKKKKKKK.....", "    KOOOOK......", "    KOOKOK......", "     KOOK.......", "      KK........", "................", "................", "................", "................", "................", "................"
+    ],
+    rocket: [
+        "......KK........", "     KRRK.......", "    KRRRRK......", "    KWWWWK......", "...KWWCCWWK.....", "...KWWCCWWK.....", "...KWWWWWWK.....", "..KKWWWWWWKK....", ".KRRKWWWWKRRK...", ".KRRKKKKKKRRK...", "    KYYYYK......", "     KYYK.......", "................", "................", "................", "................"
+    ],
+    syringe: [
+        "...........KK...", "          KWWK..", "         KWWK...", "       KKWWK....", "      KCCCCK....", "     KGGGGK.....", "    KGGGGK......", "...KCCCCK.......", "..KWWKK.........", ".KWWK...........", "KWWK............", "KK..............", "................", "................", "................", "................"
+    ],
+    note: [
+        "................", "...KKKKKKKKKK...", "..KWWWWWWWWWWK..", "..KWKKKKKKWWWK..", "..KWWWWWWWWWWK..", "..KWKKKKKKKKWK..", "..KWWWWWWWWWWK..", "..KWKKKKKWWWWK..", "..KWWWWWWWRRWK..", "...KKKKKKKKKK...", "................", "................", "................", "................", "................", "................"
+    ],
+    doctor: [
+        "....KKKKKK......", "...KWWWWWWK.....", "..KWWRRWWWWK....", "..KSSSSSSSSK....", "..KSKSSSSKSK....", "...KSSSSSSK.....", "..KKWWWWWWKK....", ".KWWWWCCWWWWK...", ".KWWWWCCWWWWK...", ".KSKWWWWWWKSK...", "..KKWWWWWWKK....", "...KWW  WWK.....", "................", "................", "................", "................"
+    ],
+    trophy: [
+        "...KKKKKKKK.....", "..KYYYYYYYYK....", ".KKYYYYYYYYKK...", ".KYYYYYYYYYYK...", "..KKYYYYYYKK....", "    KYYYYK......", "     KYYK.......", "     KYYK.......", "    KYYYYK......", "...KKKKKKKK.....", "................", "................", "................", "................", "................", "................"
+    ]
+};
+
+function drawSpriteToCanvas(canvasEl, spriteKey) {
+    if (!canvasEl) return;
+    const ctx = canvasEl.getContext('2d');
+    const grid = SPRITES_16[spriteKey] || SPRITES_16.note;
+    const w = canvasEl.width;
+    const h = canvasEl.height;
+    ctx.clearRect(0, 0, w, h);
+    const cellW = w / 16;
+    const cellH = h / 16;
+    for (let y = 0; y < 16; y++) {
+        const row = grid[y];
+        for (let x = 0; x < 16; x++) {
+            const color = PALETTE[row[x]];
+            if (color) {
+                ctx.fillStyle = color;
+                ctx.fillRect(Math.floor(x * cellW), Math.floor(y * cellH), Math.ceil(cellW), Math.ceil(cellH));
+            }
+        }
+    }
+}
+
+function spriteImgHTML(spriteKey) {
+    const c = document.createElement('canvas');
+    c.width = 16;
+    c.height = 16;
+    drawSpriteToCanvas(c, spriteKey);
+    return `<img src="${c.toDataURL()}" class="sprite-icon" alt="">`;
+}
+
+function createPixelTexture(bgHex, dotHex, patternType = 'noise') {
+    const c = document.createElement('canvas');
+    c.width = 16;
+    c.height = 16;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = bgHex;
+    ctx.fillRect(0, 0, 16, 16);
+    ctx.fillStyle = dotHex;
+
+    if (patternType === 'grid') {
+        ctx.fillRect(0, 0, 16, 1);
+        ctx.fillRect(0, 0, 1, 16);
+        ctx.fillRect(7, 7, 2, 2);
+    } else if (patternType === 'bricks') {
+        ctx.fillRect(0, 4, 16, 1);
+        ctx.fillRect(0, 12, 16, 1);
+        ctx.fillRect(4, 0, 1, 4);
+        ctx.fillRect(12, 4, 1, 8);
+    } else if (patternType === 'planks') {
+        ctx.fillRect(0, 3, 16, 1);
+        ctx.fillRect(0, 7, 16, 1);
+        ctx.fillRect(0, 11, 16, 1);
+        ctx.fillRect(0, 15, 16, 1);
+    } else if (patternType === 'checker') {
+        for (let y = 0; y < 16; y += 4) {
+            for (let x = 0; x < 16; x += 4) {
+                if ((x + y) % 8 === 0) ctx.fillRect(x, y, 4, 4);
+            }
+        }
+    } else {
+        for (let i = 0; i < 24; i++) {
+            ctx.fillRect((i * 7) % 16, (i * 11) % 16, 1, 1);
+        }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+}
+
+class ChiptuneAudio {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.bgmTimer = null;
+        this.stepIdx = 0;
+    }
+    init() {
+        if (!this.ctx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AC();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        this.startChiptuneLoop();
+    }
+    toggleMute() {
+        this.muted = !this.muted;
+        const btn = document.getElementById('btn-hud-mute');
+        if (btn) btn.innerText = this.muted ? 'SES:KAPALI' : 'SES:ACIK';
+    }
+    playSquare(freq, dur, vol = 0.08, type = 'square', slide = null) {
+        if (this.muted || !this.ctx) return;
+        try {
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, t);
+            if (slide) osc.frequency.exponentialRampToValueAtTime(slide, t + dur);
+            gain.gain.setValueAtTime(vol, t);
+            gain.gain.setValueAtTime(0.001, t + dur);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + dur);
+        } catch (e) {}
+    }
+    playVoiceBlip(pitch = 330) {
+        this.playSquare(pitch + (Math.random() * 40 - 20), 0.04, 0.055, 'square');
+    }
+    playStep() { this.playSquare(105, 0.035, 0.03, 'triangle', 60); }
+    playSelect() {
+        this.playSquare(587.33, 0.05, 0.08, 'square');
+        setTimeout(() => this.playSquare(880, 0.08, 0.08, 'square'), 50);
+    }
+    playCoin() {
+        this.playSquare(987.77, 0.06, 0.09, 'square');
+        setTimeout(() => this.playSquare(1318.51, 0.14, 0.09, 'square'), 65);
+    }
+    playMine() {
+        this.playSquare(320, 0.07, 0.1, 'triangle', 120);
+        setTimeout(() => this.playSquare(740, 0.06, 0.08, 'square'), 60);
+    }
+    playWater() {
+        this.playSquare(440, 0.08, 0.08, 'sine', 660);
+        setTimeout(() => this.playSquare(550, 0.1, 0.08, 'sine', 820), 70);
+    }
+    playRocket() { this.playSquare(95, 0.5, 0.12, 'sawtooth', 320); }
+    playPoison() {
+        this.playSquare(185, 0.22, 0.1, 'sawtooth', 80);
+        setTimeout(() => this.playSquare(140, 0.28, 0.1, 'sawtooth', 55), 150);
+    }
+    playHeal() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+            setTimeout(() => this.playSquare(f, 0.11, 0.08, 'triangle'), i * 70);
+        });
+    }
+    startChiptuneLoop() {
+        if (this.bgmTimer) return;
+        const leadNotes = [523.25, 0, 392.00, 329.63, 440.00, 0, 392.00, 0, 349.23, 392.00, 440.00, 523.25, 392.00, 0, 329.63, 0];
+        const bassNotes = [130.81, 130.81, 196.00, 196.00, 174.61, 174.61, 130.81, 130.81, 146.83, 146.83, 174.61, 174.61, 196.00, 196.00, 130.81, 130.81];
+        this.bgmTimer = setInterval(() => {
+            if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
+            const i = this.stepIdx % leadNotes.length;
+            if (leadNotes[i] > 0) this.playSquare(leadNotes[i], 0.15, 0.028, 'square');
+            if (bassNotes[i] > 0) this.playSquare(bassNotes[i], 0.17, 0.038, 'triangle');
+            this.stepIdx++;
+        }, 235);
+    }
+}
+const sfx = new ChiptuneAudio();
+
+const SAVE_PREFIX = 'uzayli_dondurma_v9_slot_';
+const CURE_VACCINE_COST = 100000;
+const RESTOCK_INTERVAL_MS = 30000;
+
+const PLANETS = {
+    alley: { id: 'alley', name: 'DUNYA', unlockCost: 0, bgHex: 0x141422, floorBg: '#2a2a38', floorDot: '#1a1a24', desc: 'Baslangic mahallesi, evin, komsun ve Test Laboratuvari.' },
+    neon: { id: 'neon', name: 'NEON SUT', unlockCost: 0, bgHex: 0x070416, floorBg: '#191333', floorDot: '#332266', desc: 'Ana Uzay Ussu! Tum dukkanlar, ahir, bahce, pet shop ve cocop burada.' },
+    crystal: { id: 'crystal', name: 'KRISTAL BUZUL', unlockCost: 1500, bgHex: 0x041826, floorBg: '#12384d', floorDot: '#3399cc', desc: 'Buzul inekleri, Buzul Bogurtleni ve Kristal Kayalar.' },
+    magma: { id: 'magma', name: 'VOLKAN MAGMA', unlockCost: 6500, bgHex: 0x1f0704, floorBg: '#3b110a', floorDot: '#aa3311', desc: 'Magma inegi, Gunes Ejder Meyvesi ve Magma Cevheri!' }
+};
+
+const COW_CATALOG = [
+    { id: 'purple', name: 'MOR UZAY INEGI', planet: 'neon', cost: 0, milkName: 'MOR SUT', value: 50, poisonRisk: 0.12, sprite: 'cow_purple', color: 0xcc44ff },
+    { id: 'crystal_cow', name: 'KRISTAL BUZ INEGI', planet: 'crystal', cost: 850, milkName: 'KRISTAL SUT', value: 210, poisonRisk: 0.22, sprite: 'cow_crystal', color: 0x00ffff },
+    { id: 'magma_cow', name: 'VOLKAN MAGMA INEGI', planet: 'magma', cost: 3400, milkName: 'LAV SUTU', value: 700, poisonRisk: 0.35, sprite: 'cow_magma', color: 0xff3322 }
+];
+
+const FRUIT_CATALOG = [
+    { id: 'star', name: 'YILDIZ CILEGI', planet: 'neon', seedCost: 20, growSec: 6, value: 65, poisonRisk: 0.10, sprite: 'fruit_star', color: 0xff44aa },
+    { id: 'melon', name: 'AY KAVUNU', planet: 'neon', seedCost: 65, growSec: 8, value: 155, poisonRisk: 0.15, sprite: 'fruit_melon', color: 0x00ff55 },
+    { id: 'ice_berry', name: 'BUZUL BOGURTLENI', planet: 'crystal', seedCost: 180, growSec: 10, value: 400, poisonRisk: 0.24, sprite: 'fruit_ice', color: 0x2288ff },
+    { id: 'dragon_fruit', name: 'EJDER MEYVESI', planet: 'magma', seedCost: 520, growSec: 12, value: 1200, poisonRisk: 0.40, sprite: 'fruit_dragon', color: 0xff8800 }
+];
+
+const PET_CATALOG = [
+    { id: 'cat', name: 'GALAKTIK KEDI', cost: 500, sprite: 'pet_cat', desc: 'Inekleri otomatik besler ve mutlu tutar.' },
+    { id: 'monster', name: 'PARA CANAVARI', cost: 1200, sprite: 'pet_monster', desc: 'Dondurma satis gelirini kalici olarak %50 artirir!' },
+    { id: 'snail', name: 'HIZLI SALYANGOZ', cost: 800, sprite: 'pet_snail', desc: 'Bahcedeki meyvelerin buyume suresini yariya indirir!' }
+];
+
+const SHOP_MACHINES = [
+    { id: 'auto_milker', name: 'OTO SUT SAGIM MAKINESI', cost: 450, desc: 'Ahirdaki ineklerden her 8 saniyede otomatik sut uretir!' },
+    { id: 'super_mixer', name: 'PLAZMA DONDURMA MIKSERI', cost: 900, desc: 'Dondurma satis fiyatlarini kalici olarak %50 artirir!' },
+    { id: 'toxin_filter', name: 'TOKSIN ARITMA CIHAZI', cost: 1400, desc: 'Musterilerin dondurmadan zehirlenme riskini %75 azaltir!' }
+];
+
+const GEAR_CATALOG = [
+    { id: 'bucket', name: 'UZAY SU KOVASI', cost: 120, sprite: 'bucket', desc: 'Bahcedeki ekinleri sulayarak buyume suresini yariya indirir!' },
+    { id: 'sprinkler', name: 'OTOMATIK SPRINKLER', cost: 650, sprite: 'sprinkler', desc: 'Tum bahce parsellerini surekli otomatik sular!' },
+    { id: 'pickaxe', name: 'PLAZMA KAZMA', cost: 300, sprite: 'pickaxe', desc: 'Gezegenlerdeki parlayan Kristal Kayalari kazarak cevher & altin cikarir!' }
+];
+
+const ACHIEVEMENTS = [
+    { id: 'first_milk', title: 'ILK UZAY SUTU', desc: 'Ilk kez bir uzayli inek sag.' },
+    { id: 'first_harvest', title: 'KOZMIK CIFTCILIK', desc: 'Bahceden ilk meyveni hasat et.' },
+    { id: 'first_sale', title: 'DONDURMACI CIRAGI', desc: 'Bir uzayli musteriye dondurma sat.' },
+    { id: 'poison_fine', title: 'SAGLIK BAKANLIGI CEZASI', desc: 'Zehirli dondurma yuzunden musteri tazminati ode.' },
+    { id: 'first_craft', title: 'USTA ZANAATKAR', desc: 'Craft atolyesinde ilk esyani uret.' },
+    { id: 'first_mine', title: 'ASTEROID MADENCISI', desc: 'Plazma kazma ile kristal kaya kaz.' },
+    { id: 'machine_owner', title: 'OTOMASYON IMPARATORU', desc: 'Dukkana bir uretim makinesi satin al.' },
+    { id: 'planet_hopper', title: 'GALAKSI GEZGINI', desc: 'Roketle yeni bir gezegene ucus yap.' },
+    { id: 'rich_10k', title: 'UZAY ZENGINI', desc: 'Cuzdaninda 10.000$ biriktir.' },
+    { id: 'pet_owner', title: 'EVCIL HAYVAN DOSTU', desc: 'Pet shop\'tan bir uzayli dost edin.' },
+    { id: 'cocop_trader', title: 'COCOP TYCOON', desc: 'Cocop agindan ilk pasif ticaret karini topla.' },
+    { id: 'ending_1', title: 'SON 1: INSANLIGA DONUS', desc: '100.000$ asiyi alip normal asili sonu tamamla.' },
+    { id: 'ending_2', title: 'SON 2: ISSIZ SON', desc: '1. gezegende uzaya cikmadan oyunu bitir.' },
+    { id: 'ending_3', title: 'SON 3: IMZALAMAYAN SON', desc: 'Test sozlesmesini imzalamayi reddederek hayatta kal.' }
+];
+
+let activeSlotIndex = 0;
+let activeShopMenu = null;
+
+function generateFreshStocks() {
+    const cows = {};
+    COW_CATALOG.forEach(c => {
+        if (c.id !== 'purple') {
+            cows[c.id] = Math.random() < 0.7 ? (Math.random() < 0.35 ? 2 : 1) : 0;
+        }
+    });
+
+    const fruits = {};
+    FRUIT_CATALOG.forEach(f => {
+        if (f.id === 'star') fruits[f.id] = Math.floor(Math.random() * 3) + 2;
+        else if (f.id === 'melon') fruits[f.id] = Math.floor(Math.random() * 3) + 1;
+        else fruits[f.id] = Math.random() < 0.75 ? (Math.floor(Math.random() * 2) + 1) : 0;
+    });
+
+    const gear = {};
+    GEAR_CATALOG.forEach(g => {
+        gear[g.id] = Math.random() < 0.75 ? 1 : 0;
+    });
+
+    return {
+        lastReset: Date.now(),
+        cows,
+        fruits,
+        gear
+    };
+}
+
+function resetAllStocks(silent = false) {
+    state.stocks = generateFreshStocks();
+    saveSlot(activeSlotIndex, state);
+    if (!silent) {
+        sfx.playSelect();
+        showPixelToast('* TUM DUKKAN STOKLARI YENILENDI! (RESTOCK)');
+    }
+    if (document.getElementById('menu-modal').style.display === 'flex') {
+        if (activeShopMenu === 'cow') openCowMerchantMenu();
+        else if (activeShopMenu === 'seed') openSeedMerchantMenu();
+        else if (activeShopMenu === 'gear') openGearShopMenu();
+    }
+}
+
+function getRemainingRestockSec() {
+    if (!state.stocks || !state.stocks.lastReset) return 30;
+    const elapsed = Date.now() - state.stocks.lastReset;
+    return Math.max(0, Math.ceil((RESTOCK_INTERVAL_MS - elapsed) / 1000));
+}
+
+function createDefaultState(playerName) {
+    return {
+        name: playerName || 'KASIF',
+        shopName: 'DONDURMA DUKKANI',
+        planet: 'alley',
+        interior: null,
+        unlockedPlanets: ['alley', 'neon'],
+        alienGene: false,
+        cured: false,
+        gold: 50,
+        hp: 20,
+        maxHp: 20,
+        poisoned: false,
+        shopLevel: 1,
+        barnLevel: 1,
+        gardenLevel: 1,
+        cows: ['purple'],
+        cowTimers: {},
+        plots: [
+            { fruitId: null, plantedAt: 0, watered: false, ready: false },
+            { fruitId: null, plantedAt: 0, watered: false, ready: false }
+        ],
+        pets: [],
+        cocopInvested: false,
+        cocopLastClaim: 0,
+        machines: { auto_milker: false, super_mixer: false, toxin_filter: false },
+        gear: { bucket: false, sprinkler: false, pickaxe: false },
+        stocks: generateFreshStocks(),
+        bag: { milks: {}, fruits: {}, crystals: 0, crafted: { cone: 0, antidote: 0 } },
+        achievements: [],
+        endings: []
+    };
+}
+
+let state = createDefaultState('KASIF');
+
+function unlockAchievement(achId) {
+    if (!state.achievements.includes(achId)) {
+        state.achievements.push(achId);
+        const a = ACHIEVEMENTS.find(x => x.id === achId);
+        sfx.playCoin();
+        showPixelToast(`* BASARIM ACILDI: ${a ? a.title : achId}!`);
+        saveSlot(activeSlotIndex, state);
+    }
+}
+
+function recordEnding(endingNum, title, portrait, desc) {
+    if (!state.endings.includes(endingNum)) state.endings.push(endingNum);
+    unlockAchievement(`ending_${endingNum}`);
+    saveSlot(activeSlotIndex, state);
+
+    drawSpriteToCanvas(document.getElementById('ending-portrait'), portrait);
+    document.getElementById('ending-badge').innerText = `* SON ${endingNum} / 3 TAMAMLANDI *`;
+    document.getElementById('ending-title').innerText = title;
+    document.getElementById('ending-desc').innerText = desc;
+    document.getElementById('ending-overlay').style.display = 'flex';
+}
+
+function saveSlot(slotIdx, dataObj, notify = false) {
+    try {
+        localStorage.setItem(SAVE_PREFIX + slotIdx, JSON.stringify(dataObj));
+        if (notify) showPixelToast(`* SLOT ${slotIdx + 1} KAYDEDILDI!`);
+    } catch (e) {}
+}
+
+function loadSlot(slotIdx) {
+    try {
+        const raw = localStorage.getItem(SAVE_PREFIX + slotIdx);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+}
+
+function deleteSlot(slotIdx) {
+    try { localStorage.removeItem(SAVE_PREFIX + slotIdx); } catch (e) {}
+}
+
+const canvas = document.getElementById('game-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+
+function updatePixelResolution() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const internalH = 224;
+    const internalW = Math.max(320, Math.round(internalH * aspect));
+    renderer.setSize(internalW, internalH, false);
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+}
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 150);
+updatePixelResolution();
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.88));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
+dirLight.position.set(12, 24, 14);
+scene.add(dirLight);
+
+const worldContainer = new THREE.Group();
+scene.add(worldContainer);
+
+const playerObj = new THREE.Group();
+scene.add(playerObj);
+let legL, legR, armL, armR;
+
+let solidColliders = [];
+let zoneTriggers = [];
+let mapLandmarks = [];
+let animEntities = [];
+let cowModels = [];
+let plotModels = [];
+let rockModels = [];
+let customerNPCs = [];
+let petModels = [];
+let worldBounds = { minX: -20, maxX: 20, minZ: -20, maxZ: 20 };
+
+function createFloatingLabel(text, yPos, borderColor = '#ffff00', textColor = '#ffffff') {
+    const c = document.createElement('canvas');
+    const len = Math.max(8, text.length);
+    c.width = len * 24 + 48;
+    c.height = 68;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, c.width - 8, c.height - 8);
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 26px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, c.width / 2, c.height / 2 + 2);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    const spr = new THREE.Sprite(mat);
+    spr.scale.set(c.width / 52, c.height / 52, 1);
+    spr.position.y = yPos;
+    return spr;
+}
+
+function addSolidBox(cx, cz, widthX, depthZ) {
+    solidColliders.push({
+        minX: cx - widthX / 2, maxX: cx + widthX / 2,
+        minZ: cz - depthZ / 2, maxZ: cz + depthZ / 2
+    });
+}
+
+function resolvePlayerCollisions(radius = 0.55) {
+    playerObj.position.x = Math.max(worldBounds.minX + radius, Math.min(worldBounds.maxX - radius, playerObj.position.x));
+    playerObj.position.z = Math.max(worldBounds.minZ + radius, Math.min(worldBounds.maxZ - radius, playerObj.position.z));
+
+    for (let i = 0; i < solidColliders.length; i++) {
+        const b = solidColliders[i];
+        const closestX = Math.max(b.minX, Math.min(playerObj.position.x, b.maxX));
+        const closestZ = Math.max(b.minZ, Math.min(playerObj.position.z, b.maxZ));
+        const dx = playerObj.position.x - closestX;
+        const dz = playerObj.position.z - closestZ;
+        const distSq = dx * dx + dz * dz;
+
+        if (distSq < radius * radius) {
+            const dist = Math.sqrt(distSq);
+            if (dist > 0.0001) {
+                const overlap = radius - dist;
+                playerObj.position.x += (dx / dist) * overlap;
+                playerObj.position.z += (dz / dist) * overlap;
+            } else {
+                playerObj.position.x = b.minX - radius;
+            }
+        }
+    }
+}
+
+function buildPlayerVoxel() {
+    while (playerObj.children.length > 0) playerObj.remove(playerObj.children[0]);
+    const skinCol = state.alienGene ? 0x00ff55 : 0xffcc99;
+    const clothCol = state.planet === 'alley' ? 0x666677 : 0x00ffff;
+    const pantCol = state.planet === 'alley' ? 0x333344 : 0x442288;
+
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinCol });
+    const clothMat = new THREE.MeshLambertMaterial({ color: clothCol });
+    const pantMat = new THREE.MeshLambertMaterial({ color: pantCol });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.95, 0.5), clothMat);
+    body.position.y = 1.05;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 0.75), skinMat);
+    head.position.y = 1.95;
+
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const eyeW = state.alienGene ? 0.18 : 0.12;
+    const eL = new THREE.Mesh(new THREE.BoxGeometry(eyeW, 0.18, 0.05), eyeMat);
+    eL.position.set(-0.18, 1.98, 0.38);
+    const eR = new THREE.Mesh(new THREE.BoxGeometry(eyeW, 0.18, 0.05), eyeMat);
+    eR.position.set(0.18, 1.98, 0.38);
+    playerObj.add(body, head, eL, eR);
+
+    if (state.alienGene) {
+        const antMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        [-0.2, 0.2].forEach(ax => {
+            const ant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.45, 0.1), skinMat);
+            ant.position.set(ax, 2.5, 0);
+            const tip = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), antMat);
+            tip.position.set(ax, 2.75, 0);
+            playerObj.add(ant, tip);
+        });
+    }
+
+    legL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.6, 0.32), pantMat);
+    legL.position.set(-0.22, 0.3, 0);
+    legR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.6, 0.32), pantMat);
+    legR.position.set(0.22, 0.3, 0);
+    armL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.8, 0.24), skinMat);
+    armL.position.set(-0.56, 1.05, 0);
+    armR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.8, 0.24), skinMat);
+    armR.position.set(0.56, 1.05, 0);
+    playerObj.add(legL, legR, armL, armR);
+}
+
+function clearSceneObjects() {
+    while (worldContainer.children.length > 0) worldContainer.remove(worldContainer.children[0]);
+    solidColliders = [];
+    zoneTriggers = [];
+    mapLandmarks = [];
+    animEntities = [];
+    cowModels = [];
+    plotModels = [];
+    rockModels = [];
+    customerNPCs = [];
+    petModels = [];
+}
+
+function buildVoxelNPC(x, z, bodyColor, headColor, hatColor = null) {
+    const npc = new THREE.Group();
+    npc.position.set(x, 0, z);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.0, 0.55), new THREE.MeshLambertMaterial({ color: bodyColor }));
+    body.position.y = 0.85;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 0.75), new THREE.MeshLambertMaterial({ color: headColor }));
+    head.position.y = 1.75;
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const e1 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.05), eyeMat);
+    e1.position.set(-0.18, 1.8, 0.38);
+    const e2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.05), eyeMat);
+    e2.position.set(0.18, 1.8, 0.38);
+    npc.add(body, head, e1, e2);
+    if (hatColor) {
+        const hat = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.25, 0.95), new THREE.MeshLambertMaterial({ color: hatColor }));
+        hat.position.y = 2.22;
+        npc.add(hat);
+    }
+    worldContainer.add(npc);
+    animEntities.push({ mesh: npc, kind: 'npc', phase: x + z });
+    return npc;
+}
+
+function buildEnterableExterior(cx, cz, w, h, d, wallTex, roofCol, doorCol, beaconCol, labelText, interiorId) {
+    const g = new THREE.Group();
+    g.position.set(cx, 0, cz);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ map: wallTex }));
+    body.position.y = h / 2;
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.5, 0.6, d + 0.5), new THREE.MeshLambertMaterial({ color: roofCol }));
+    roof.position.y = h + 0.3;
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.5, 0.2), new THREE.MeshBasicMaterial({ color: doorCol }));
+    door.position.set(0, 1.25, d / 2 + 0.05);
+    const matPad = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 1.5), new THREE.MeshBasicMaterial({ color: doorCol }));
+    matPad.position.set(0, 0.04, d / 2 + 0.85);
+
+    const hexStr = '#' + beaconCol.toString(16).padStart(6, '0');
+    const signSprite = createFloatingLabel(labelText, h + 1.45, hexStr, '#ffffff');
+
+    g.add(body, roof, door, matPad, signSprite);
+    worldContainer.add(g);
+    addSolidBox(cx, cz, w, d);
+
+    const doorZ = cz + d / 2 + 1.4;
+    zoneTriggers.push({
+        x: cx, z: cz + d / 2 + 1.2, radius: 2.2,
+        btnText: `[Z] ICERI GIR (${labelText})`,
+        onTrigger: () => enterBuildingInterior(interiorId)
+    });
+
+    mapLandmarks.push({
+        name: labelText,
+        x: cx,
+        z: cz,
+        w: w,
+        d: d,
+        tpX: cx,
+        tpZ: doorZ,
+        color: hexStr
+    });
+}
+
+function buildDetailedStall(cx, cz, roofCol1, roofCol2, deskColor, labelText = '') {
+    const g = new THREE.Group();
+    g.position.set(cx, 0, cz);
+    const desk = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.1, 1.4), new THREE.MeshLambertMaterial({ color: deskColor }));
+    desk.position.y = 0.55;
+    g.add(desk);
+    const postMat = new THREE.MeshLambertMaterial({ color: 0x553311 });
+    [[-1.8, -0.55], [1.8, -0.55], [-1.8, 0.55], [1.8, 0.55]].forEach(([px, pz]) => {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.7, 0.22), postMat);
+        post.position.set(px, 1.35, pz);
+        g.add(post);
+    });
+    for (let i = 0; i < 4; i++) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.25, 1.8), new THREE.MeshLambertMaterial({ color: i % 2 === 0 ? roofCol1 : roofCol2 }));
+        stripe.position.set(-1.58 + i * 1.05, 2.75, 0);
+        g.add(stripe);
+    }
+    if (labelText) {
+        g.add(createFloatingLabel(labelText, 3.85, '#ffff00', '#00ffff'));
+        mapLandmarks.push({
+            name: labelText,
+            x: cx,
+            z: cz,
+            w: 4.0,
+            d: 2.0,
+            tpX: cx,
+            tpZ: cz + 1.9,
+            color: '#ff8800'
+        });
+    }
+    worldContainer.add(g);
+    addSolidBox(cx, cz - 0.3, 4.1, 2.2);
+}
+
+function buildFencedEnclosure(cx, cz, w, d, fenceColor = 0x228844, labelText = '') {
+    const mat = new THREE.MeshLambertMaterial({ color: fenceColor });
+    const halfW = w / 2, halfD = d / 2, thick = 0.35;
+    const back = new THREE.Mesh(new THREE.BoxGeometry(w, 0.85, thick), mat);
+    back.position.set(cx, 0.42, cz - halfD);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(thick, 0.85, d), mat);
+    left.position.set(cx - halfW, 0.42, cz);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(thick, 0.85, d), mat);
+    right.position.set(cx + halfW, 0.42, cz);
+    worldContainer.add(back, left, right);
+    addSolidBox(cx, cz - halfD, w, thick);
+    addSolidBox(cx - halfW, cz, thick, d);
+    addSolidBox(cx + halfW, cz, thick, d);
+    const segW = (w - 2.4) / 2;
+    const frontL = new THREE.Mesh(new THREE.BoxGeometry(segW, 0.85, thick), mat);
+    frontL.position.set(cx - halfW + segW / 2, 0.42, cz + halfD);
+    const frontR = new THREE.Mesh(new THREE.BoxGeometry(segW, 0.85, thick), mat);
+    frontR.position.set(cx + halfW - segW / 2, 0.42, cz + halfD);
+    worldContainer.add(frontL, frontR);
+    addSolidBox(cx - halfW + segW / 2, cz + halfD, segW, thick);
+    addSolidBox(cx + halfW - segW / 2, cz + halfD, segW, thick);
+    if (labelText) {
+        const lbl = createFloatingLabel(labelText, 2.4, '#00ff66', '#ffffff');
+        lbl.position.set(cx, 2.4, cz - halfD);
+        worldContainer.add(lbl);
+        mapLandmarks.push({
+            name: labelText,
+            x: cx,
+            z: cz,
+            w: w,
+            d: d,
+            tpX: cx,
+            tpZ: cz + halfD + 1.2,
+            color: '#00ff66'
+        });
+    }
+}
+
+function buildSpaceRocket(cx, cz) {
+    const g = new THREE.Group();
+    g.position.set(cx, 0, cz);
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.35, 4.6), new THREE.MeshLambertMaterial({ map: createPixelTexture('#333344', '#ffff00', 'grid') }));
+    pad.position.y = 0.175;
+    g.add(pad);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 3.6, 1.5), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+    body.position.y = 2.4;
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), new THREE.MeshLambertMaterial({ color: 0xff2222 }));
+    nose.position.y = 4.7;
+    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.6, 0.55), new THREE.MeshLambertMaterial({ color: 0xff2222 }));
+    tip.position.y = 5.5;
+    const win = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.65, 1.6), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
+    win.position.y = 2.9;
+    const finMat = new THREE.MeshLambertMaterial({ color: 0xff2222 });
+    const finX = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.1, 0.25), finMat);
+    finX.position.y = 1.1;
+    const finZ = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.1, 2.6), finMat);
+    finZ.position.y = 1.1;
+    const flame = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.9), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
+    flame.position.y = 0.5;
+    animEntities.push({ mesh: flame, kind: 'flame' });
+    g.add(body, nose, tip, win, finX, finZ, flame, createFloatingLabel('UZAY ROKETI', 6.8, '#00ffff', '#ffff00'));
+    worldContainer.add(g);
+    addSolidBox(cx, cz, 2.5, 2.5);
+    mapLandmarks.push({
+        name: 'UZAY ROKETI',
+        x: cx,
+        z: cz,
+        w: 3.5,
+        d: 3.5,
+        tpX: cx,
+        tpZ: cz + 2.5,
+        color: '#00ffff'
+    });
+}
+
+function enterBuildingInterior(interiorId) {
+    sfx.playSelect();
+    state.interior = interiorId;
+    loadInteriorScene(interiorId);
+    playerObj.position.set(0, 0, 5.5);
+    playerObj.rotation.y = Math.PI;
+    updateHUD();
+}
+
+function exitBuildingInterior(returnPos) {
+    sfx.playSelect();
+    state.interior = null;
+    loadPlanetScene(state.planet);
+    playerObj.position.set(returnPos.x, 0, returnPos.z);
+    playerObj.rotation.y = 0;
+    updateHUD();
+}
+
+function buildInteriorRoomBase(floorTex, wallTex, exitReturnPos, roomLabel) {
+    clearSceneObjects();
+    scene.background = new THREE.Color(0x06060d);
+    scene.fog = new THREE.Fog(0x06060d, 22, 50);
+    worldBounds = { minX: -8.5, maxX: 8.5, minZ: -8.5, maxZ: 7.5 };
+
+    floorTex.repeat.set(9, 9);
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(18, 0.5, 17), new THREE.MeshLambertMaterial({ map: floorTex }));
+    floor.position.y = -0.25;
+    worldContainer.add(floor);
+
+    const backW = new THREE.Mesh(new THREE.BoxGeometry(18, 4.2, 0.6), new THREE.MeshLambertMaterial({ map: wallTex }));
+    backW.position.set(0, 2.1, -8.8);
+    const leftW = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4.2, 17), new THREE.MeshLambertMaterial({ map: wallTex }));
+    leftW.position.set(-8.8, 2.1, -0.5);
+    const rightW = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4.2, 17), new THREE.MeshLambertMaterial({ map: wallTex }));
+    rightW.position.set(8.8, 2.1, -0.5);
+    worldContainer.add(backW, leftW, rightW);
+
+    const exitPad = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.1, 1.6), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+    exitPad.position.set(0, 0.05, 6.8);
+    const exitLbl = createFloatingLabel('CIKIS', 1.6, '#ffff00', '#ffff00');
+    exitLbl.position.set(0, 1.6, 6.8);
+    worldContainer.add(exitPad, exitLbl);
+
+    zoneTriggers.push({
+        x: 0, z: 6.5, radius: 2.2,
+        btnText: '[Z] DISARI CIK',
+        onTrigger: () => exitBuildingInterior(exitReturnPos)
+    });
+
+    mapLandmarks.push({
+        name: 'CIKIS KAPISI',
+        x: 0,
+        z: 6.8,
+        w: 3.2,
+        d: 1.6,
+        tpX: 0,
+        tpZ: 5.5,
+        color: '#ffff00'
+    });
+
+    setQuest(`IC MEKAN: ${roomLabel} (CIKMAK ICIN SARI PASPASA YURU)`);
+}
+
+function loadInteriorScene(interiorId) {
+    if (interiorId === 'lab') {
+        buildInteriorRoomBase(
+            createPixelTexture('#c8d8e8', '#88aacc', 'grid'),
+            createPixelTexture('#ffffff', '#2288ff', 'bricks'),
+            { x: 0, z: -7.5 },
+            'UZAYLI TEST LABORATUVARI ICI'
+        );
+        [-5.5, 5.5].forEach(px => {
+            const base = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 2.2), new THREE.MeshLambertMaterial({ color: 0x334455 }));
+            base.position.set(px, 0.25, -5.0);
+            const glass = new THREE.Mesh(new THREE.BoxGeometry(1.7, 3.0, 1.7), new THREE.MeshLambertMaterial({ color: 0x00ff66 }));
+            glass.position.set(px, 2.0, -5.0);
+            worldContainer.add(base, glass);
+            addSolidBox(px, -5.0, 2.2, 2.2);
+        });
+        const consoleDesk = new THREE.Mesh(new THREE.BoxGeometry(5.2, 1.2, 1.6), new THREE.MeshLambertMaterial({ color: 0x2288ff }));
+        consoleDesk.position.set(0, 0.6, -2.5);
+        const screenBox = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.0, 0.4), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
+        screenBox.position.set(0, 1.6, -2.5);
+        worldContainer.add(consoleDesk, screenBox);
+        addSolidBox(0, -2.5, 5.2, 1.6);
+        buildVoxelNPC(0, -4.2, 0xffffff, 0xffcc99, 0x00ffff);
+        const labLbl = createFloatingLabel('DNA TEST MASASI', 2.9, '#00ffff', '#ffffff');
+        labLbl.position.set(0, 2.9, -2.5);
+        worldContainer.add(labLbl);
+        mapLandmarks.push({ name: 'DNA TEST MASASI', x: 0, z: -2.5, w: 5.2, d: 1.6, tpX: 0, tpZ: -0.6, color: '#00ffff' });
+
+        zoneTriggers.push({
+            x: 0, z: -0.6, radius: 2.6,
+            btnText: '[Z] DNA TEST SOZLESMESI',
+            onTrigger: () => {
+                sfx.playSelect();
+                openChoiceDialogue(
+                    'doctor',
+                    '* DR. ATOM: "Uzayli Geni Testi sozlesmesini imzalayip DNA tarayiciya girecek misin?"',
+                    () => {
+                        sfx.playPoison();
+                        openDialogue('doctor', [
+                            '* DNA TARAYICI: BI-BIP! UZAYLI MUTASYONU AKTIF!',
+                            '* DR. ATOM: "Sozlesmeyi imzaladin ve kaninda uzayli geni tespit edildi!"',
+                            '* "Seni Neon Sut Gezegeni Uzay Ussune isinliyoruz! Orada inek sagip dondurma satarak para kazan!"'
+                        ], () => {
+                            state.planet = 'neon';
+                            state.interior = null;
+                            state.alienGene = true;
+                            buildPlayerVoxel();
+                            loadPlanetScene('neon');
+                            playerObj.position.set(0, 0, 3);
+                            updateHUD();
+                            saveSlot(activeSlotIndex, state);
+                            showPixelToast('* NEON SUT GEZEGENINE ISINLANDIN!');
+                        });
+                    },
+                    () => {
+                        recordEnding(
+                            3,
+                            'SON 3: IMZALAMAYAN SON',
+                            'human',
+                            `* ${state.name}, laboratuvarin icindeki supheli test sozlesmesini imzalamayi reddetti! Uzayli geni kapmadi, normal bir insan olarak evine dondu.`
+                        );
+                    }
+                );
+            }
+        });
+    } else if (interiorId === 'my_home') {
+        buildInteriorRoomBase(
+            createPixelTexture('#553311', '#331a05', 'planks'),
+            createPixelTexture('#886644', '#553322', 'bricks'),
+            { x: -7.5, z: 6.5 },
+            'KENDI EVIN'
+        );
+        const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 3.6), new THREE.MeshLambertMaterial({ color: 0x663311 }));
+        bedFrame.position.set(-5.5, 0.35, -5.5);
+        const blanket = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 2.6), new THREE.MeshLambertMaterial({ color: 0x2266aa }));
+        blanket.position.set(-5.5, 0.75, -5.0);
+        const bedLbl = createFloatingLabel('YATAK', 2.2, '#aaaaaa', '#ffffff');
+        bedLbl.position.set(-5.5, 2.2, -5.5);
+        worldContainer.add(bedFrame, blanket, bedLbl);
+        addSolidBox(-5.5, -5.5, 2.4, 3.6);
+        mapLandmarks.push({ name: 'YATAK', x: -5.5, z: -5.5, w: 2.4, d: 3.6, tpX: -3.6, tpZ: -4.5, color: '#aaaaaa' });
+
+        zoneTriggers.push({
+            x: -3.6, z: -4.5, radius: 2.4,
+            btnText: '[Z] YATAKTA UYU (SON 2)',
+            onTrigger: () => {
+                openChoiceDialogue(
+                    'human',
+                    '* Uzaya hic cikmadan kendi evindeki yatakta uyuyup fakir ve issiz olarak oyunu bitirmek istiyor musun?',
+                    () => {
+                        recordEnding(
+                            2,
+                            'SON 2: ISSIZ SON',
+                            'human',
+                            `* ${state.name}, uzay macerasina hic atilmadi ve 1. gezegendeki kendi evinde cebinde ${state.gold}$ ile issiz kaldi.`
+                        );
+                    },
+                    () => showPixelToast('* UYUMAKTAN VAZGECTIN!')
+                );
+            }
+        });
+    } else if (interiorId === 'neighbor_home') {
+        buildInteriorRoomBase(
+            createPixelTexture('#335544', '#1a3322', 'checker'),
+            createPixelTexture('#447755', '#224433', 'bricks'),
+            { x: 7.5, z: 6.5 },
+            'KOMSU EVI'
+        );
+        buildVoxelNPC(0, -3.5, 0x008833, 0xffcc99, 0xffff00);
+        mapLandmarks.push({ name: 'KOMSU MIRA', x: 0, z: -3.5, w: 1.5, d: 1.5, tpX: 0, tpZ: -1.8, color: '#00ff66' });
+        zoneTriggers.push({
+            x: 0, z: -1.8, radius: 2.5,
+            btnText: '[Z] KOMSU ILE KONUS',
+            onTrigger: () => {
+                openDialogue('neighbor', [
+                    '* KOMSU MIRA: "Hos geldin komsu! Sokagin ortasina dusen o sari ilani gordun mu?"',
+                    '* "Kuzeydeki Test Laboratuvari biraz tuhaf gorunuyor!"'
+                ]);
+            }
+        });
+    } else if (interiorId === 'shop') {
+        const sName = state.shopName || 'DONDURMA DUKKANI';
+        buildInteriorRoomBase(
+            createPixelTexture('#ff88cc', '#ffffff', 'checker'),
+            createPixelTexture('#cc3388', '#881155', 'bricks'),
+            { x: 0, z: -12.5 },
+            `${sName} ICI`
+        );
+        const counter = new THREE.Mesh(new THREE.BoxGeometry(8.5, 1.2, 1.6), new THREE.MeshLambertMaterial({ color: 0x00ffff }));
+        counter.position.set(0, 0.6, -2.5);
+        worldContainer.add(counter);
+        addSolidBox(0, -2.5, 8.5, 1.6);
+        const beacon1 = createFloatingLabel('SATIS TEZGAHI', 2.5, '#00ffff', '#ffffff');
+        beacon1.position.set(0, 2.5, -2.5);
+        worldContainer.add(beacon1);
+        mapLandmarks.push({ name: 'SATIS TEZGAHI', x: 0, z: -2.5, w: 8.5, d: 1.6, tpX: 0, tpZ: -4.2, color: '#00ffff' });
+
+        zoneTriggers.push({
+            x: 0, z: -4.2, radius: 2.5,
+            btnText: '[Z] MUSTERIYE SATIS YAP',
+            onTrigger: openCustomerCounterMenu
+        });
+
+        const signDesk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.1, 1.2), new THREE.MeshLambertMaterial({ color: 0xff8800 }));
+        signDesk.position.set(-5.8, 0.55, 1.5);
+        const signLbl = createFloatingLabel('DUKKAN ISMI', 2.3, '#ff8800', '#ffff00');
+        signLbl.position.set(-5.8, 2.3, 1.5);
+        worldContainer.add(signDesk, signLbl);
+        addSolidBox(-5.8, 1.5, 2.2, 1.2);
+        mapLandmarks.push({ name: 'DUKKAN TABELASI', x: -5.8, z: 1.5, w: 2.2, d: 1.2, tpX: -5.8, tpZ: 3.0, color: '#ff8800' });
+
+        zoneTriggers.push({
+            x: -5.8, z: 3.0, radius: 2.2,
+            btnText: '[Z] DUKKAN ISMI KOY',
+            onTrigger: openShopRenameMenu
+        });
+
+        spawnShopCustomers();
+    } else if (interiorId === 'barn') {
+        buildInteriorRoomBase(
+            createPixelTexture('#553311', '#331a05', 'planks'),
+            createPixelTexture('#772222', '#441111', 'planks'),
+            { x: -14, z: -11.5 },
+            'INEK AHIRI ICI'
+        );
+        state.cows.forEach((cid, i) => {
+            const cData = COW_CATALOG.find(c => c.id === cid);
+            if (!cData) return;
+            const g = new THREE.Group();
+            g.position.set((i - 1) * 3, 0, -3);
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.95, 0.85), new THREE.MeshLambertMaterial({ color: cData.color }));
+            body.position.y = 0.8;
+            g.add(body, createFloatingLabel(cData.name, 2.2, '#00ff66', '#ffffff'));
+            worldContainer.add(g);
+        });
+        mapLandmarks.push({ name: 'INEK SAGIM ALANI', x: 0, z: -3, w: 6, d: 2, tpX: 0, tpZ: -1.5, color: '#00ff66' });
+        zoneTriggers.push({
+            x: 0, z: -1.5, radius: 5.0,
+            btnText: '[Z] INEKLERI SAG',
+            onTrigger: openBarnMenu
+        });
+    } else if (interiorId === 'hospital') {
+        buildInteriorRoomBase(
+            createPixelTexture('#dddddd', '#bbbbcc', 'grid'),
+            createPixelTexture('#ffffff', '#88ccff', 'bricks'),
+            { x: 0, z: 20.5 },
+            'UZAY HASTANESI ICI'
+        );
+        buildVoxelNPC(0, -4.0, 0xffffff, 0xffcc99, 0xff2222);
+        mapLandmarks.push({ name: 'DR. NEBULA & ASI', x: 0, z: -4.0, w: 2, d: 2, tpX: 0, tpZ: -0.6, color: '#ff2222' });
+        zoneTriggers.push({
+            x: 0, z: -0.6, radius: 2.6,
+            btnText: '[Z] DR. NEBULA & ASI',
+            onTrigger: openHospitalMenu
+        });
+    } else if (interiorId === 'craft') {
+        buildInteriorRoomBase(
+            createPixelTexture('#332211', '#1a1108', 'planks'),
+            createPixelTexture('#553322', '#221108', 'bricks'),
+            { x: -15.5, z: -2.0 },
+            'CRAFT ATOLYESI ICI'
+        );
+        buildVoxelNPC(0, -4.3, 0x664422, 0xffcc99, 0xff2222);
+        mapLandmarks.push({ name: 'CRAFT TEZGAHI', x: 0, z: -4.3, w: 3, d: 2, tpX: 0, tpZ: -0.5, color: '#ff8800' });
+        zoneTriggers.push({
+            x: 0, z: -0.5, radius: 2.8,
+            btnText: '[Z] CRAFT TEZGAHI',
+            onTrigger: openCraftWorkshopMenu
+        });
+    } else if (interiorId === 'gear') {
+        buildInteriorRoomBase(
+            createPixelTexture('#1a2a3a', '#0f1a24', 'grid'),
+            createPixelTexture('#224466', '#112233', 'bricks'),
+            { x: 15.5, z: -3.0 },
+            'GEAR SHOP ICI'
+        );
+        buildVoxelNPC(0, -4.1, 0xff8800, 0xffcc99, 0x00ffff);
+        mapLandmarks.push({ name: 'GEAR SHOP SATICISI', x: 0, z: -4.1, w: 3, d: 2, tpX: 0, tpZ: -0.6, color: '#00ffff' });
+        zoneTriggers.push({
+            x: 0, z: -0.6, radius: 2.8,
+            btnText: '[Z] GEAR SHOP SATICISI',
+            onTrigger: openGearShopMenu
+        });
+    } else if (interiorId === 'pet') {
+        buildInteriorRoomBase(
+            createPixelTexture('#3a1a3a', '#220f22', 'checker'),
+            createPixelTexture('#662266', '#441144', 'bricks'),
+            { x: -15.5, z: 12.5 },
+            'PET SHOP ICI'
+        );
+        buildVoxelNPC(0, -4.1, 0xcc44ff, 0xffcc99, 0xff8800);
+        mapLandmarks.push({ name: 'PET SHOP TEZGAHI', x: 0, z: -4.1, w: 3, d: 2, tpX: 0, tpZ: -0.6, color: '#cc44ff' });
+        zoneTriggers.push({
+            x: 0, z: -0.6, radius: 2.8,
+            btnText: '[Z] PET SHOP DUKKANI',
+            onTrigger: openPetShopMenu
+        });
+    } else if (interiorId === 'cocop') {
+        buildInteriorRoomBase(
+            createPixelTexture('#1a3a3a', '#0f2222', 'grid'),
+            createPixelTexture('#226666', '#114444', 'bricks'),
+            { x: 15.5, z: 20.0 },
+            'COCOP GALAKTIK TICARET MERKEZI'
+        );
+        buildVoxelNPC(0, -4.1, 0x00ffff, 0xffcc99, 0xffff00);
+        mapLandmarks.push({ name: 'COCOP TERMINALI', x: 0, z: -4.1, w: 3, d: 2, tpX: 0, tpZ: -0.6, color: '#00ffff' });
+        zoneTriggers.push({
+            x: 0, z: -0.6, radius: 2.8,
+            btnText: '[Z] COCOP TERMINALI',
+            onTrigger: openCocopMenu
+        });
+    }
+}
+
+function spawnShopCustomers() {
+    customerNPCs = [];
+    [{ x: -2.2, z: -0.6, col: 0xcc44ff }, { x: 0.0, z: -0.6, col: 0x00ffff }, { x: 2.2, z: -0.6, col: 0xff8800 }].forEach((cp, idx) => {
+        const g = new THREE.Group();
+        g.position.set(cp.x, 0, cp.z);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), new THREE.MeshLambertMaterial({ color: 0x4444aa }));
+        body.position.y = 0.85;
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 0.75), new THREE.MeshLambertMaterial({ color: cp.col }));
+        head.position.y = 1.75;
+        g.add(body, head);
+        worldContainer.add(g);
+        customerNPCs.push({ mesh: g, headMesh: head, origColor: cp.col, phase: idx * 1.3 });
+    });
+}
+
+function loadPlanetScene(planetId) {
+    clearSceneObjects();
+    const pInfo = PLANETS[planetId] || PLANETS.alley;
+    scene.background = new THREE.Color(pInfo.bgHex);
+    scene.fog = new THREE.Fog(pInfo.bgHex, 28, 72);
+
+    if (planetId === 'alley') {
+        worldBounds = { minX: -12.5, maxX: 12.5, minZ: -17, maxZ: 14 };
+        const floorTex = createPixelTexture(pInfo.floorBg, pInfo.floorDot, 'grid');
+        floorTex.repeat.set(16, 20);
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 36), new THREE.MeshLambertMaterial({ map: floorTex }));
+        ground.rotation.x = -Math.PI / 2;
+        worldContainer.add(ground);
+
+        buildEnterableExterior(-7.5, 3.5, 5.4, 3.4, 4.2, createPixelTexture('#886644', '#553322', 'planks'), 0xcc4422, 0xffff00, 0xffff00, 'KENDI EVIN', 'my_home');
+        buildEnterableExterior(7.5, 3.5, 5.4, 3.4, 4.2, createPixelTexture('#447755', '#224433', 'bricks'), 0x2288aa, 0x00ff66, 0x00ff66, 'KOMSU EVI', 'neighbor_home');
+
+        const noteObj = new THREE.Group();
+        noteObj.position.set(0, 0.05, 3.5);
+        noteObj.add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 1.1), new THREE.MeshBasicMaterial({ color: 0xffff00 })), createFloatingLabel('ILAN NOTU', 1.5, '#ffff00', '#ffff00'));
+        worldContainer.add(noteObj);
+
+        mapLandmarks.push({ name: 'ILAN NOTU', x: 0, z: 3.5, w: 1.5, d: 1.5, tpX: 0, tpZ: 5.0, color: '#ffff00' });
+
+        zoneTriggers.push({
+            x: 0, z: 3.5, radius: 2.3,
+            btnText: '[Z] YERDEKI KAGIT',
+            onTrigger: () => {
+                sfx.playSelect();
+                openChoiceDialogue(
+                    'note',
+                    '* Yerde burusmus bir ilan buldun: "Uzayli testine gelin, uzay macerasini kapin!" Okumak ister misin?',
+                    () => openDialogue('note', ['* ILAN: "Kuzeydeki Test Laboratuvarina git!"'], () => setQuest('KUZEYDEKI TEST LABORATUVARINA GIR')),
+                    () => showPixelToast('* KAGIDI OKUMADAN BIRAKTIN.')
+                );
+            }
+        });
+
+        buildEnterableExterior(0, -11.5, 8.4, 4.5, 5.2, createPixelTexture('#cccccc', '#888899', 'grid'), 0x2288ff, 0x00ffff, 0x00ffff, 'TEST LABORATUVARI', 'lab');
+        playerObj.position.set(0, 0, 10.5);
+        setQuest('YERDEKI KAGIDI OKU VEYA LABORATUVARA GIR');
+        return;
+    }
+
+    worldBounds = { minX: -24, maxX: 24, minZ: -24, maxZ: 24 };
+    const pTex = createPixelTexture(pInfo.floorBg, pInfo.floorDot, 'grid');
+    pTex.repeat.set(24, 24);
+    const ground = new THREE.Mesh(new THREE.BoxGeometry(50, 1, 50), new THREE.MeshLambertMaterial({ map: pTex }));
+    ground.position.y = -0.5;
+    worldContainer.add(ground);
+
+    const shopTitle = state.shopName || 'DONDURMA DUKKANI';
+
+    buildEnterableExterior(0, -16, 7.6, 3.8, 4.4, createPixelTexture('#ff44aa', '#ffffff', 'bricks'), 0x00ffff, 0xffff00, 0xffff00, shopTitle, 'shop');
+    buildEnterableExterior(-14, -15, 6.8, 3.6, 4.2, createPixelTexture('#772222', '#441111', 'planks'), 0xdddddd, 0xcc44ff, 0xcc44ff, 'INEK AHIRI', 'barn');
+    buildEnterableExterior(0, 17, 7.6, 3.8, 4.2, createPixelTexture('#eeeeee', '#bbbbcc', 'grid'), 0xff2222, 0xff2222, 0xff2222, 'UZAY HASTANESI', 'hospital');
+
+    buildEnterableExterior(-15.5, -5.5, 5.6, 3.4, 4.0, createPixelTexture('#553322', '#221108', 'bricks'), 0xff8800, 0xff8800, 0xff8800, 'CRAFT ATOLYESI', 'craft');
+    buildEnterableExterior(15.5, -6.5, 5.6, 3.4, 4.0, createPixelTexture('#224466', '#112233', 'bricks'), 0x00ffff, 0x00ffff, 0x00ffff, 'GEAR SHOP', 'gear');
+
+    buildEnterableExterior(-15.5, 9.0, 5.6, 3.4, 4.0, createPixelTexture('#662266', '#3a1a3a', 'bricks'), 0xcc44ff, 0xff8800, 0xff8800, 'PET SHOP', 'pet');
+    buildEnterableExterior(15.5, 16.5, 5.6, 3.4, 4.0, createPixelTexture('#226666', '#1a3a3a', 'bricks'), 0x00ffff, 0xffff00, 0xffff00, 'COCOP TSO', 'cocop');
+
+    buildDetailedStall(-15.5, 1.5, 0xcc44ff, 0xffff00, 0x553322, 'INEK TUCCARI');
+    buildVoxelNPC(-15.5, 0.7, 0x664422, 0xcc44ff, 0xffff00);
+    zoneTriggers.push({ x: -15.5, z: 3.4, radius: 2.5, btnText: '[Z] INEK TUCCARI', onTrigger: openCowMerchantMenu });
+
+    buildDetailedStall(15.5, -0.5, 0x00ff55, 0xffff00, 0x446622, 'TOHUMCU');
+    buildVoxelNPC(15.5, -1.3, 0x008833, 0xffcc99, 0x00ff55);
+    zoneTriggers.push({ x: 15.5, z: 1.4, radius: 2.5, btnText: '[Z] TOHUMCU NPC', onTrigger: openSeedMerchantMenu });
+
+    buildFencedEnclosure(14.5, 6.8, 7.6, 5.8, 0x228844, 'UZAY BAHCESI');
+    refreshPlotVoxels();
+    zoneTriggers.push({ x: 14.5, z: 7.2, radius: 3.6, btnText: '[Z] BAHCE', onTrigger: openGardenMenu });
+
+    buildSpaceRocket(0, -1.5);
+    zoneTriggers.push({ x: 0, z: 1.5, radius: 3.1, btnText: '[Z] UZAY ROKETI', onTrigger: openRocketMenu });
+    spawnMineableRocks(planetId);
+    spawnActivePets();
+
+    setQuest('STOKLARI TAKIP ET, INEK & TOHUM AL, DONDURMA SAT!');
+}
+
+function spawnActivePets() {
+    petModels.forEach(m => worldContainer.remove(m));
+    petModels = [];
+    state.pets.forEach((pid, idx) => {
+        const pData = PET_CATALOG.find(x => x.id === pid);
+        if (!pData) return;
+        const g = new THREE.Group();
+        g.position.set(-2 + idx * 1.5, 0, 4);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshLambertMaterial({ color: 0xffff00 }));
+        body.position.y = 0.3;
+        g.add(body, createFloatingLabel(pData.name, 1.3, '#00ffff', '#ffffff'));
+        worldContainer.add(g);
+        petModels.push(g);
+        animEntities.push({ mesh: g, kind: 'pet', phase: idx });
+    });
+}
+
+function spawnMineableRocks(planetId) {
+    rockModels = [];
+    const rockCol = planetId === 'magma' ? 0xff4400 : (planetId === 'crystal' ? 0x00ffff : 0xcc44ff);
+    [[-6.5, 11.5], [6.5, 11.5]].forEach(([rx, rz]) => {
+        const g = new THREE.Group();
+        g.position.set(rx, 0, rz);
+        const rock = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.2, 1.3), new THREE.MeshLambertMaterial({ color: rockCol }));
+        rock.position.y = 0.6;
+        g.add(rock, createFloatingLabel('KRISTAL KAYA', 2.0, '#cc44ff', '#ffffff'));
+        worldContainer.add(g);
+        addSolidBox(rx, rz, 1.3, 1.3);
+        zoneTriggers.push({
+            x: rx, z: rz, radius: 2.1,
+            btnText: '[Z] KRISTAL KAZ',
+            onTrigger: () => {
+                if (!state.gear.pickaxe) {
+                    showPixelToast('* KAZMAK ICIN GEAR SHOP\'TAN PLAZMA KAZMA AL!');
+                    return;
+                }
+                sfx.playMine();
+                const bonusGold = planetId === 'magma' ? 120 : (planetId === 'crystal' ? 65 : 35);
+                state.gold += bonusGold;
+                state.bag.crystals = (state.bag.crystals || 0) + 1;
+                unlockAchievement('first_mine');
+                updateHUD();
+                saveSlot(activeSlotIndex, state);
+                showPixelToast(`* KAZILDI! +1 KRISTAL & +${bonusGold}$!`);
+            }
+        });
+    });
+}
+
+function refreshPlotVoxels() {
+    plotModels.forEach(m => worldContainer.remove(m));
+    plotModels = [];
+    const spots = [[-2.0, -1.5], [2.0, -1.5], [-2.0, 0.0], [2.0, 0.0], [-2.0, 1.5], [2.0, 1.5]];
+    state.plots.forEach((plot, i) => {
+        if (i >= spots.length) return;
+        const [ox, oz] = spots[i];
+        const g = new THREE.Group();
+        g.position.set(14.5 + ox, 0.08, 6.8 + oz);
+        const dirtColor = plot.watered || state.gear.sprinkler || state.pets.includes('snail') ? 0x1b3a5c : 0x2b180a;
+        const dirt = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.14, 1.2), new THREE.MeshLambertMaterial({ color: dirtColor }));
+        g.add(dirt);
+        if (plot.fruitId) {
+            const fData = FRUIT_CATALOG.find(f => f.id === plot.fruitId);
+            const sz = plot.ready ? 0.85 : 0.38;
+            const crop = new THREE.Mesh(new THREE.BoxGeometry(sz, sz, sz), new THREE.MeshLambertMaterial({ color: fData.color }));
+            crop.position.y = sz / 2 + 0.08;
+            g.add(crop);
+        }
+        worldContainer.add(g);
+        plotModels.push(g);
+    });
+}
+
+function openMapMenu() {
+    activeShopMenu = null;
+    sfx.playSelect();
+    const pName = state.interior ? `${PLANETS[state.planet].name} (IC MEKAN)` : PLANETS[state.planet].name;
+    let html = `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="font-size:7.5px;color:#00ffff;text-align:center;">* BOLGE: ${pName} | SARI NOKTA: SEN</div>
+        <canvas id="radar-map-canvas" width="240" height="240" style="width:220px;height:220px;border:3px solid #ffffff;background:#080814;"></canvas>
+    </div>
+    <div style="font-size:7.5px;color:#ffff00;margin-top:6px;border-bottom:2px solid #444;padding-bottom:4px;">* MEKANLAR & HIZLI ISINLANMA:</div>`;
+
+    mapLandmarks.forEach((lm, idx) => {
+        html += `
+        <div class="item-row" style="padding:5px 7px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="display:inline-block;width:10px;height:10px;background:${lm.color};border:1px solid #fff;"></span>
+                <span style="font-size:7.5px;color:#ffffff;">${lm.name}</span>
+            </div>
+            <button onclick="doTeleportLandmark(${idx})" class="ut-btn ut-btn-cyan" style="padding:4px 7px;font-size:7px;">GIT</button>
+        </div>`;
+    });
+
+    showMenu('* GALAKTIK HARITA', html);
+    setTimeout(drawRadarMapCanvas, 10);
+}
+
+function drawRadarMapCanvas() {
+    const c = document.getElementById('radar-map-canvas');
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const spanX = Math.max(10, worldBounds.maxX - worldBounds.minX);
+    const spanZ = Math.max(10, worldBounds.maxZ - worldBounds.minZ);
+    const toPxX = (wx) => ((wx - worldBounds.minX) / spanX) * (W - 24) + 12;
+    const toPxY = (wz) => ((wz - worldBounds.minZ) / spanZ) * (H - 24) + 12;
+
+    ctx.strokeStyle = '#1b2238';
+    ctx.lineWidth = 1;
+    for (let g = 0; g <= W; g += 24) {
+        ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, H); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(W, g); ctx.stroke();
+    }
+
+    mapLandmarks.forEach(lm => {
+        const px = toPxX(lm.x);
+        const py = toPxY(lm.z);
+        const bw = Math.max(10, (lm.w / spanX) * (W - 24));
+        const bh = Math.max(10, (lm.d / spanZ) * (H - 24));
+
+        ctx.fillStyle = lm.color;
+        ctx.fillRect(px - bw / 2, py - bh / 2, bw, bh);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px - bw / 2, py - bh / 2, bw, bh);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        const shortName = lm.name.length > 11 ? lm.name.slice(0, 10) + '.' : lm.name;
+        ctx.fillText(shortName, px, py - bh / 2 - 3);
+    });
+
+    const ppx = toPxX(playerObj.position.x);
+    const ppy = toPxY(playerObj.position.z);
+    ctx.fillStyle = '#ffff00';
+    ctx.fillRect(ppx - 4, ppy - 4, 8, 8);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(ppx - 4, ppy - 4, 8, 8);
+}
+
+window.doTeleportLandmark = function(idx) {
+    const lm = mapLandmarks[idx];
+    if (!lm) return;
+    sfx.playSelect();
+    playerObj.position.set(lm.tpX, 0, lm.tpZ);
+    resolvePlayerCollisions(0.55);
+    closeMenu();
+    showPixelToast(`* ${lm.name} KONUMUNA ISINLANDIN!`);
+};
+
+let dialogueQueue = [], dialogueCallback = null, typingInterval = null, isTyping = false, currentFullLine = '', isChoiceActive = false, choiceYesFn = null, choiceNoFn = null;
+
+function openDialogue(portraitKey, lines, onComplete = null) {
+    isChoiceActive = false;
+    document.getElementById('btn-dialogue-next').style.display = 'inline-flex';
+    document.getElementById('btn-choice-yes').style.display = 'none';
+    document.getElementById('btn-choice-no').style.display = 'none';
+    drawSpriteToCanvas(document.getElementById('dialogue-portrait'), portraitKey);
+    dialogueQueue = [...lines];
+    dialogueCallback = onComplete;
+    document.getElementById('dialogue-overlay').style.display = 'flex';
+    advanceDialogue();
+}
+
+function openChoiceDialogue(portraitKey, questionText, onYes, onNo) {
+    isChoiceActive = true;
+    choiceYesFn = onYes;
+    choiceNoFn = onNo;
+    document.getElementById('btn-dialogue-next').style.display = 'none';
+    document.getElementById('btn-choice-yes').style.display = 'inline-flex';
+    document.getElementById('btn-choice-no').style.display = 'inline-flex';
+    drawSpriteToCanvas(document.getElementById('dialogue-portrait'), portraitKey);
+    document.getElementById('dialogue-overlay').style.display = 'flex';
+    typeSingleLine(questionText);
+}
+
+function typeSingleLine(line) {
+    clearInterval(typingInterval);
+    currentFullLine = line;
+    const textEl = document.getElementById('dialogue-text');
+    textEl.innerText = '';
+    let idx = 0;
+    isTyping = true;
+    typingInterval = setInterval(() => {
+        if (idx < currentFullLine.length) {
+            const ch = currentFullLine[idx];
+            textEl.innerText += ch;
+            if (ch !== ' ' && idx % 2 === 0) sfx.playVoiceBlip(320);
+            idx++;
+        } else {
+            clearInterval(typingInterval);
+            isTyping = false;
+        }
+    }, 24);
+}
+
+function advanceDialogue() {
+    if (isChoiceActive) return;
+    if (isTyping) {
+        clearInterval(typingInterval);
+        isTyping = false;
+        document.getElementById('dialogue-text').innerText = currentFullLine;
+        return;
+    }
+    if (dialogueQueue.length === 0) {
+        document.getElementById('dialogue-overlay').style.display = 'none';
+        if (dialogueCallback) dialogueCallback();
+        return;
+    }
+    typeSingleLine(dialogueQueue.shift());
+}
+
+document.getElementById('btn-dialogue-next').addEventListener('click', advanceDialogue);
+document.getElementById('btn-choice-yes').addEventListener('click', () => {
+    clearInterval(typingInterval);
+    isTyping = false;
+    document.getElementById('dialogue-overlay').style.display = 'none';
+    sfx.playSelect();
+    if (choiceYesFn) choiceYesFn();
+});
+document.getElementById('btn-choice-no').addEventListener('click', () => {
+    clearInterval(typingInterval);
+    isTyping = false;
+    document.getElementById('dialogue-overlay').style.display = 'none';
+    sfx.playSelect();
+    if (choiceNoFn) choiceNoFn();
+});
+
+function showMenu(title, innerHTML) {
+    document.getElementById('menu-title').innerText = title;
+    document.getElementById('menu-body').innerHTML = innerHTML;
+    document.getElementById('menu-modal').style.display = 'flex';
+}
+
+function closeMenu() {
+    activeShopMenu = null;
+    document.getElementById('menu-modal').style.display = 'none';
+}
+document.getElementById('btn-menu-close').addEventListener('click', closeMenu);
+
+function showPixelToast(msg) {
+    const el = document.getElementById('pixel-toast');
+    el.innerText = msg;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 2600);
+}
+
+function applyPlayerPoison(sourceName) {
+    sfx.playPoison();
+    state.poisoned = true;
+    state.hp = Math.max(2, state.hp - 5);
+    document.getElementById('poison-vignette').style.display = 'block';
+    updateHUD();
+    showPixelToast(`* ZEHIRLENDIN! (${sourceName}) HASTANEYE GIT!`);
+}
+
+function openShopRenameMenu() {
+    activeShopMenu = null;
+    const html = `
+    <div style="font-size:8px;color:#00ffff;line-height:1.6;">* DONDURMA DUKKANININ YENI ISMINI GIRIN (MAX 18 KARAKTER):</div>
+    <input type="text" id="shop-name-input" maxlength="18" value="${state.shopName || 'DONDURMA DUKKANI'}" placeholder="DUKKAN ISMI...">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+        <button onclick="doSaveShopName()" class="ut-btn ut-btn-green">KAYDET</button>
+    </div>`;
+    showMenu('* DUKKAN TABELASI', html);
+}
+
+window.doSaveShopName = function() {
+    const inp = document.getElementById('shop-name-input');
+    const newName = (inp ? inp.value.trim().toUpperCase() : '') || 'DONDURMA DUKKANI';
+    state.shopName = newName;
+    sfx.playSelect();
+    saveSlot(activeSlotIndex, state);
+    closeMenu();
+    setQuest(`IC MEKAN: ${state.shopName} ICI`);
+    showPixelToast(`* DUKKAN ISMI "${state.shopName}" OLDU!`);
+};
+
+function openPetShopMenu() {
+    activeShopMenu = null;
+    let html = `
+    <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #444;padding-bottom:6px;">
+        ${spriteImgHTML('pet_shop_owner')}
+        <div style="font-size:8px;color:#cc44ff;line-height:1.6;">* PET USTASI: "Yaninda dolasan pasif bonuslu sevimli evcil hayvanlar al!"</div>
+    </div>`;
+
+    PET_CATALOG.forEach(p => {
+        const owned = state.pets.includes(p.id);
+        html += `
+        <div class="item-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+                ${spriteImgHTML(p.sprite)}
+                <div style="font-size:8px;line-height:1.6;">
+                    <div style="color:#ffff00;">${p.name}</div>
+                    <div style="color:#aaaaaa;">${p.desc}</div>
+                </div>
+            </div>
+            ${owned ? `<span style="font-size:8px;color:#00ff66;">SAHIBISIN</span>` : `<button onclick="doBuyPet('${p.id}')" class="ut-btn ut-btn-cyan">AL ${p.cost}$</button>`}
+        </div>`;
+    });
+    showMenu('* UZAYLI PET SHOP', html);
+}
+
+window.doBuyPet = function(pid) {
+    const p = PET_CATALOG.find(x => x.id === pid);
+    if (!p || state.gold < p.cost) return showPixelToast('* YETERSIZ ALTIN!');
+    state.gold -= p.cost;
+    state.pets.push(pid);
+    sfx.playCoin();
+    unlockAchievement('pet_owner');
+    updateHUD();
+    saveSlot(activeSlotIndex, state);
+    if (!state.interior && state.planet !== 'alley') spawnActivePets();
+    showPixelToast(`* ${p.name} SATIN ALINDI!`);
+    openPetShopMenu();
+};
+
+function openCocopMenu() {
+    activeShopMenu = null;
+    const now = Date.now();
+    const canClaim = state.cocopInvested && (now - state.cocopLastClaim >= 15000);
+    const remSec = Math.max(0, Math.ceil((15000 - (now - state.cocopLastClaim)) / 1000));
+
+    let html = `
+    <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #444;padding-bottom:6px;">
+        ${spriteImgHTML('cocop_broker')}
+        <div style="font-size:8px;color:#00ffff;line-height:1.6;">* BROKER LEO: "Cocop Galaktik Ticaret Agina yatirim yapip pasif gelir topla!"</div>
+    </div>
+
+    <div class="item-row">
+        <div style="font-size:8px;line-height:1.6;">
+            <div style="color:#ffff00;">GALAKTIK ORTAKLIK YATIRIMI</div>
+            <div style="color:#aaaaaa;">Maliyet: 2.000$ | Her 15 saniyede +650$ kar saglar.</div>
+        </div>
+        ${state.cocopInvested
+            ? `<span style="font-size:8px;color:#00ff66;">YATIRIM AKTIF</span>`
+            : `<button onclick="doInvestCocop()" class="ut-btn ut-btn-orange">YATIRIM YAP (2000$)</button>`
+        }
+    </div>
+
+    <div class="item-row">
+        <div style="font-size:8px;line-height:1.6;">
+            <div style="color:#00ff66;">TICARET KARINI TOPLA</div>
+            <div style="color:#aaaaaa;">${state.cocopInvested ? (canClaim ? 'KAR HAZIR!' : `BEKLE: ${remSec}SN`) : 'Once yatirim yap'}</div>
+        </div>
+        <button onclick="doClaimCocop()" class="ut-btn ut-btn-green" ${!canClaim ? 'disabled style="border-color:#555;color:#777;"' : ''}>TOPLA (+650$)</button>
+    </div>`;
+    showMenu('* COCOP GALAKTIK TICARET', html);
+}
+
+window.doInvestCocop = function() {
+    if (state.gold < 2000) return showPixelToast('* 2000$ GEREKLI!');
+    state.gold -= 2000;
+    state.cocopInvested = true;
+    state.cocopLastClaim = Date.now();
+    sfx.playCoin();
+    updateHUD();
+    saveSlot(activeSlotIndex, state);
+    showPixelToast('* COCOP YATIRIMI BASLATILDI!');
+    openCocopMenu();
+};
+
+window.doClaimCocop = function() {
+    const now = Date.now();
+    if (!state.cocopInvested || now - state.cocopLastClaim < 15000) return;
+    state.cocopLastClaim = now;
+    state.gold += 650;
+    sfx.playCoin();
+    unlockAchievement('cocop_trader');
+    updateHUD();
+    saveSlot(activeSlotIndex, state);
+    showPixelToast('* +650$ COCOP TICARET KARI TOPLANDI!');
+    openCocopMenu();
+};
+
+function openCustomerCounterMenu() {
+    activeShopMenu = null;
+    const milks = Object.keys(state.bag.milks).filter(k => state.bag.milks[k] > 0);
+    const fruits = Object.keys(state.bag.fruits).filter(k => state.bag.fruits[k] > 0);
+    const mixerMult = state.machines.super_mixer ? 1.5 : 1.0;
+    const petMult = state.pets.includes('monster') ? 1.5 : 1.0;
+    const shopMult = 1 + (state.shopLevel - 1) * 0.25;
+
+    let html = `<div style="font-size:8px;color:#00ffff;line-height:1.6;">* [${state.shopName || 'DONDURMA DUKKANI'}] UZAYLI MUSTERILER TEZGAHTA! ZEHIRLI DONDURMA SATARSAN TAZMINAT ODERSIN!</div>`;
+    if (milks.length === 0 || fruits.length === 0) {
+        html += `<div style="font-size:8px;color:#ff8800;padding:10px;">* CANTANDA EN AZ 1 SUT VE 1 MEYVE OLMALI!</div>`;
+    } else {
+        milks.forEach(mId => {
+            const c = COW_CATALOG.find(x => x.id === mId);
+            fruits.forEach(fId => {
+                const f = FRUIT_CATALOG.find(x => x.id === fId);
+                const price = Math.round((c.value + f.value) * 1.6 * mixerMult * petMult * shopMult);
+                let poisonChance = Math.min(0.65, (c.poisonRisk + f.poisonRisk) * 0.75);
+                if (state.machines.toxin_filter) poisonChance *= 0.25;
+
+                html += `
+                <div class="item-row">
+                    <div style="font-size:8px;line-height:1.6;">
+                        <div style="color:#ff44aa;">${c.milkName} + ${f.name}</div>
+                        <div style="color:#aaaaaa;">ZEHIR RISKI: %${Math.round(poisonChance * 100)} | Fiyat: ${price}$</div>
+                    </div>
+                    <button onclick="doServeCustomer('${mId}','${fId}',${price},${poisonChance})" class="ut-btn ut-btn-cyan">SERVIS YAP</button>
+                </div>`;
+            });
+        });
+    }
+    showMenu(`* ${state.shopName || 'DONDURMA SERVISI'}`, html);
+}
+
+window.doServeCustomer = function(mId, fId, price, poisonChance) {
+    if ((state.bag.milks[mId] || 0) <= 0 || (state.bag.fruits[fId] || 0) <= 0) return;
+    state.bag.milks[mId]--;
+    state.bag.fruits[fId]--;
+
+    if (Math.random() < poisonChance) {
+        const fine = Math.max(40, Math.round(price * 0.9));
+        state.gold = Math.max(0, state.gold - fine);
+        sfx.playPoison();
+        unlockAchievement('poison_fine');
+        updateHUD();
+        saveSlot(activeSlotIndex, state);
+        closeMenu();
+        if (customerNPCs[0]) {
+            customerNPCs[0].headMesh.material.color.setHex(0x00ff44);
+            setTimeout(() => { if (customerNPCs[0]) customerNPCs[0].headMesh.material.color.setHex(customerNPCs[0].origColor); }, 3000);
+        }
+        openDialogue('customer_alien', ['* MUSTERI: "OGHH! MIDEM YANIYOR!"', `* SAGLIK POLISI: "Zehirli dondurma yuzunden ${fine}$ tazminat kesildi!"`]);
+    } else {
+        state.gold += price;
+        sfx.playCoin();
+        unlockAchievement('first_sale');
+        if (state.gold >= 10000) unlockAchievement('rich_10k');
+        updateHUD();
+        saveSlot(activeSlotIndex, state);
+        showPixelToast(`* +${price}$ KAZANDIN!`);
+        openCustomerCounterMenu();
+    }
+};
+
+function openEasyUpgradesMenu() {
+    activeShopMenu = null;
+    const shopCost = state.shopLevel * 300;
+    const barnCost = state.barnLevel * 250;
+    const gardenCost = state.gardenLevel === 1 ? 350 : 1500;
+    const html = `
+    <div class="item-row"><div style="font-size:8px;color:#ff44aa;">${state.shopName || 'DONDURMA DUKKANI'} (SV. ${state.shopLevel})</div><button onclick="doEasyUpgrade('shop')" class="ut-btn ut-btn-green">YUKSELT (${shopCost}$)</button></div>
+    <div class="item-row"><div style="font-size:8px;color:#cc44ff;">UZAYLI INEK AHIRI (SV. ${state.barnLevel})</div><button onclick="doEasyUpgrade('barn')" class="ut-btn ut-btn-green">YUKSELT (${barnCost}$)</button></div>
+    <div class="item-row"><div style="font-size:8px;color:#00ff66;">UZAY BAHCESI (${state.plots.length} PARSEL)</div>${state.gardenLevel < 3 ? `<button onclick="doEasyUpgrade('garden')" class="ut-btn ut-btn-green">YUKSELT (${gardenCost}$)</button>` : '<span style="color:#ffff00;">MAKS</span>'}</div>`;
+    showMenu('* BINA GELISTIRME', html);
+}
+
+window.doEasyUpgrade = function(type) {
+    if (type === 'shop') { const c = state.shopLevel * 300; if (state.gold < c) return showPixelToast('* YETERSIZ ALTIN!'); state.gold -= c; state.shopLevel++; }
+    else if (type === 'barn') { const c = state.barnLevel * 250; if (state.gold < c) return showPixelToast('* YETERSIZ ALTIN!'); state.gold -= c; state.barnLevel++; }
+    else if (type === 'garden') {
+        if (state.gardenLevel >= 3) return;
+        const c = state.gardenLevel === 1 ? 350 : 1500;
+        if (state.gold < c) return showPixelToast('* YETERSIZ ALTIN!');
+        state.gold -= c; state.gardenLevel++;
+        while (state.plots.length < state.gardenLevel * 2) state.plots.push({ fruitId: null, plantedAt: 0, watered: false, ready: false });
+        if (!state.interior && state.planet !== 'alley') refreshPlotVoxels();
+    }
+    sfx.playCoin(); updateHUD(); saveSlot(activeSlotIndex, state); openEasyUpgradesMenu();
+};
+
+function renderRestockHeader() {
+    const sec = getRemainingRestockSec();
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #444;padding-bottom:6px;gap:6px;">
+        <div style="font-size:7.5px;color:#00ffff;">* STOK YENILENME: <span style="color:#ffff00;">${sec} SN</span></div>
+        <button onclick="doManualRestock()" class="ut-btn ut-btn-orange" style="padding:4px 7px;font-size:7px;">STOK YENILE (100$)</button>
+    </div>`;
+}
+
+window.doManualRestock = function() {
+    if (state.gold < 100) return showPixelToast('* STOK YENILEMEK ICIN 100$ GEREKLI!');
+    state.gold -= 100;
+    updateHUD();
+    resetAllStocks(false);
+};
+
+function openGearShopMenu() {
+    activeShopMenu = 'gear';
+    if (!state.stocks) state.stocks = generateFreshStocks();
+    let html = renderRestockHeader();
+    GEAR_CATALOG.forEach(g => {
+        const owned = state.gear[g.id];
+        const stk = state.stocks.gear[g.id] || 0;
+        html += `
+        <div class="item-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+                ${spriteImgHTML(g.sprite)}
+                <div style="font-size:8px;line-height:1.5;">
+                    <div style="color:#ffff00;">${g.name} (${g.cost}$)</div>
+                    <div style="color:${stk > 0 ? '#00ff66' : '#ff3333'};">STOK: ${owned ? 'ALINDI' : stk + ' ADET'}</div>
+                </div>
+            </div>
+            ${owned
+                ? '<span style="font-size:8px;color:#00ff66;">ALINDI</span>'
+                : (stk > 0
+                    ? `<button onclick="doBuyGear('${g.id}')" class="ut-btn ut-btn-cyan">AL</button>`
+                    : `<span style="font-size:7.5px;color:#ff3333;">TUKENDI</span>`)
+            }
+        </div>`;
+    });
+    showMenu('* GEAR SHOP', html);
+}
+
+window.doBuyGear = function(gid) {
+    const g = GEAR_CATALOG.find(x => x.id === gid);
+    const stk = state.stocks.gear[gid] || 0;
+    if (!g || stk <= 0) return showPixelToast('* BU EKIPMAN STOKTA YOK!');
+    if (state.gold < g.cost) return showPixelToast('* YETERSIZ ALTIN!');
+    state.gold -= g.cost;
+    state.gear[gid] = true;
+    state.stocks.gear[gid] = Math.max(0, stk - 1);
+    sfx.playCoin();
+    updateHUD();
+    saveSlot(activeSlotIndex, state);
+    showPixelToast(`* ${g.name} SATIN ALINDI!`);
+    openGearShopMenu();
+};
+
+function openCraftWorkshopMenu() {
+    activeShopMenu = null;
+    const html = `
+    <div class="item-row"><div style="font-size:8px;color:#00ff66;">PANZEHIR SURUBU (Stok: ${state.bag.crafted.antidote})</div><button onclick="doCraftItem('antidote')" class="ut-btn ut-btn-green">URET</button></div>
+    <div class="item-row"><div style="font-size:8px;color:#00ffff;">KRISTAL CEVHERI ISLE (+150$)</div><button onclick="doCraftItem('sell_crystal')" class="ut-btn ut-btn-cyan">ISLE</button></div>`;
+    showMenu('* CRAFT ATOLYESI', html);
+}
+
+window.doCraftItem = function(kind) {
+    if (kind === 'antidote') {
+        state.bag.crafted.antidote++;
+        sfx.playSelect();
+        showPixelToast('* PANZEHIR URETILDI!');
+    } else if (kind === 'sell_crystal') {
+        if ((state.bag.crystals || 0) <= 0) return showPixelToast('* KRISTALIN YOK!');
+        state.bag.crystals--; state.gold += 150; sfx.playCoin(); showPixelToast('* +150$');
+    }
+    updateHUD(); saveSlot(activeSlotIndex, state); openCraftWorkshopMenu();
+};
+
+function openBarnMenu() {
+    activeShopMenu = null;
+    const cooldownMs = Math.max(2500, 6000 - (state.barnLevel - 1) * 900);
+    let html = '';
+    state.cows.forEach(cid => {
+        const c = COW_CATALOG.find(x => x.id === cid);
+        html += `<div class="item-row"><div style="font-size:8px;color:#ffff00;">${c.name} (${c.milkName})</div><button onclick="doMilkCow('${c.id}', ${cooldownMs})" class="ut-btn ut-btn-green">SAG</button></div>`;
+    });
+    showMenu('* INEK AHIRI', html);
+}
+
+window.doMilkCow = function(cid, cooldownMs) {
+    const c = COW_CATALOG.find(x => x.id === cid);
+    unlockAchievement('first_milk');
+    if (Math.random() < c.poisonRisk) applyPlayerPoison(c.milkName);
+    else { sfx.playSelect(); state.bag.milks[cid] = (state.bag.milks[cid] || 0) + 1; showPixelToast(`* +1 ${c.milkName}!`); }
+    updateHUD(); saveSlot(activeSlotIndex, state); openBarnMenu();
+};
+
+function openCowMerchantMenu() {
+    activeShopMenu = 'cow';
+    if (!state.stocks) state.stocks = generateFreshStocks();
+    let html = renderRestockHeader();
+    COW_CATALOG.forEach(cow => {
+        const owned = state.cows.includes(cow.id);
+        const stk = cow.id === 'purple' ? 1 : (state.stocks.cows[cow.id] || 0);
+        html += `
+        <div class="item-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+                ${spriteImgHTML(cow.sprite)}
+                <div style="font-size:8px;line-height:1.5;">
+                    <div style="color:#ffff00;">${cow.name} (${cow.cost}$)</div>
+                    <div style="color:${stk > 0 ? '#00ff66' : '#ff3333'};">STOK: ${owned ? 'SAHIBISIN' : stk + ' ADET'}</div>
+                </div>
+            </div>
+            ${owned
+                ? '<span style="font-size:8px;color:#00ff66;">SAHIBISIN</span>'
+                : (stk > 0
+                    ? `<button onclick="askBuyCow('${cow.id}')" class="ut-btn ut-btn-orange">AL</button>`
+                    : `<span style="font-size:7.5px;color:#ff3333;">TUKENDI</span>`)
+            }
+        </div>`;
+    });
+    showMenu('* INEK TUCCARI', html);
+}
+
+window.askBuyCow = function(cid) {
+    const cow = COW_CATALOG.find(c => c.id === cid);
+    const stk = state.stocks.cows[cid] || 0;
+    if (stk <= 0) return showPixelToast('* BU INEK STOKTA KALMADI!');
+    closeMenu();
+    openChoiceDialogue('cow_merchant', `* ${cow.name} (${cow.cost}$) almak istiyor musun? (Kalan Stok: ${stk})`, () => {
+        if (state.gold < cow.cost) return showPixelToast('* YETERSIZ ALTIN!');
+        if ((state.stocks.cows[cid] || 0) <= 0) return showPixelToast('* STOK TUKENDI!');
+        state.gold -= cow.cost;
+        state.cows.push(cid);
+        state.stocks.cows[cid]--;
+        sfx.playCoin();
+        updateHUD();
+        saveSlot(activeSlotIndex, state);
+        showPixelToast(`* ${cow.name} ALINDI!`);
+    }, () => {});
+};
+
+function openSeedMerchantMenu() {
+    activeShopMenu = 'seed';
+    if (!state.stocks) state.stocks = generateFreshStocks();
+    let html = renderRestockHeader();
+    FRUIT_CATALOG.forEach(f => {
+        const stk = state.stocks.fruits[f.id] || 0;
+        html += `
+        <div class="item-row">
+            <div style="display:flex;align-items:center;gap:8px;">
+                ${spriteImgHTML(f.sprite)}
+                <div style="font-size:8px;line-height:1.5;">
+                    <div style="color:#00ff66;">${f.name} (${f.seedCost}$)</div>
+                    <div style="color:${stk > 0 ? '#00ffff' : '#ff3333'};">STOK: ${stk} ADET</div>
+                </div>
+            </div>
+            ${stk > 0
+                ? `<button onclick="askBuySeed('${f.id}')" class="ut-btn ut-btn-green">TOHUM AL</button>`
+                : `<span style="font-size:7.5px;color:#ff3333;">TUKENDI</span>`
+            }
+        </div>`;
+    });
+    showMenu('* TOHUMCU (MEYVECI)', html);
+}
+
+window.askBuySeed = function(fid) {
+    const fData = FRUIT_CATALOG.find(f => f.id === fid);
+    const stk = state.stocks.fruits[fid] || 0;
+    if (stk <= 0) return showPixelToast('* BU TOHUM STOKTA TUKENDI!');
+    const emptyIdx = state.plots.findIndex(p => !p.fruitId);
+    closeMenu();
+    if (emptyIdx === -1) return showPixelToast('* BAHCEDE BOS PARSEL YOK!');
+    openChoiceDialogue('seed_merchant', `* ${fData.name} tohumu ekmek istiyor musun? (Stok: ${stk})`, () => {
+        if (state.gold < fData.seedCost) return showPixelToast('* YETERSIZ ALTIN!');
+        if ((state.stocks.fruits[fid] || 0) <= 0) return showPixelToast('* STOK TUKENDI!');
+        state.gold -= fData.seedCost;
+        state.stocks.fruits[fid]--;
+        state.plots[emptyIdx] = { fruitId: fid, plantedAt: Date.now(), watered: state.gear.sprinkler || state.pets.includes('snail'), ready: true };
+        sfx.playSelect();
+        refreshPlotVoxels();
+        updateHUD();
+        saveSlot(activeSlotIndex, state);
+        showPixelToast(`* ${fData.name} EKILDI!`);
+    }, () => {});
+};
+
+function openGardenMenu() {
+    activeShopMenu = null;
+    let html = '';
+    state.plots.forEach((plot, idx) => {
+        if (!plot.fruitId) html += `<div class="item-row"><div style="font-size:8px;">PARSEL #${idx+1} [BOS]</div></div>`;
+        else {
+            const f = FRUIT_CATALOG.find(x => x.id === plot.fruitId);
+            html += `<div class="item-row"><div style="font-size:8px;color:#00ff66;">${f.name} HAZIR!</div><button onclick="doHarvestFruit(${idx})" class="ut-btn ut-btn-yellow">HASAT</button></div>`;
+        }
+    });
+    showMenu('* BAHCE', html);
+}
+
+window.doHarvestFruit = function(idx) {
+    const plot = state.plots[idx];
+    const f = FRUIT_CATALOG.find(x => x.id === plot.fruitId);
+    state.plots[idx] = { fruitId: null, plantedAt: 0, watered: false, ready: false };
+    refreshPlotVoxels(); unlockAchievement('first_harvest');
+    state.bag.fruits[f.id] = (state.bag.fruits[f.id] || 0) + 1;
+    sfx.playSelect(); updateHUD(); saveSlot(activeSlotIndex, state); openGardenMenu();
+};
+
+function openRocketMenu() {
+    activeShopMenu = null;
+    let html = '';
+    ['neon', 'crystal', 'magma'].forEach(pid => {
+        const p = PLANETS[pid];
+        html += `<div class="item-row"><div style="font-size:8px;color:#ffff00;">${p.name}</div><button onclick="doFlyPlanet('${pid}')" class="ut-btn ut-btn-cyan">UCUS YAP</button></div>`;
+    });
+    showMenu('* ROKET', html);
+}
+
+window.doFlyPlanet = function(pid) {
+    closeMenu(); sfx.playRocket(); state.planet = pid; state.interior = null; unlockAchievement('planet_hopper');
+    loadPlanetScene(pid); updateHUD(); saveSlot(activeSlotIndex, state); showPixelToast('* GEZEGENE INIS YAPILDI!');
+};
+
+function openHospitalMenu() {
+    activeShopMenu = null;
+    const html = `
+    <div class="item-row"><div style="font-size:8px;color:#00ff66;">ZEHIR TEDAVISI (50$)</div><button onclick="doHospitalHeal()" class="ut-btn ut-btn-green">TEDAVI</button></div>
+    <div class="item-row"><div style="font-size:8px;color:#ffff00;">UZAYLI GENI TEMIZLEME ASISI (${CURE_VACCINE_COST}$)</div><button onclick="doFinalCure()" class="ut-btn ut-btn-yellow">ASIYI AL</button></div>`;
+    showMenu('* HASTANE', html);
+}
+
+window.doHospitalHeal = function() {
+    if (state.gold < 50) return showPixelToast('* 50$ GEREKLI!');
+    state.gold -= 50; state.poisoned = false; state.hp = state.maxHp;
+    document.getElementById('poison-vignette').style.display = 'none';
+    sfx.playHeal(); updateHUD(); saveSlot(activeSlotIndex, state); showPixelToast('* TEDAVI EDILDI!'); openHospitalMenu();
+};
+
+window.doFinalCure = function() {
+    if (state.gold < CURE_VACCINE_COST) return showPixelToast('* 100.000$ GEREKLI!');
+    state.gold -= CURE_VACCINE_COST; state.alienGene = false; state.cured = true; state.poisoned = false;
+    closeMenu(); buildPlayerVoxel(); sfx.playHeal(); updateHUD();
+    recordEnding(1, 'SON 1: NORMAL ASILI SON', 'human', '* 100.000$ asiyi alip insanliga geri dondun!');
+};
+
+function openAchievementsMenu() {
+    activeShopMenu = null;
+    let html = `<div style="font-size:8px;color:#ffff00;">BASARIMLAR: ${state.achievements.length} / ${ACHIEVEMENTS.length}</div>`;
+    ACHIEVEMENTS.forEach(a => {
+        const unlocked = state.achievements.includes(a.id);
+        html += `<div class="item-row"><div style="font-size:8px;color:${unlocked ? '#ffff00' : '#888'};">${a.title}</div><span style="font-size:7px;color:${unlocked ? '#00ff66' : '#666'};">${unlocked ? 'ACILDI' : 'KILIT'}</span></div>`;
+    });
+    showMenu('* BASARIMLAR', html);
+}
+
+function openBagMenu() {
+    activeShopMenu = null;
+    let html = '';
+    Object.keys(state.bag.milks).forEach(mid => {
+        const qty = state.bag.milks[mid];
+        if (qty > 0) {
+            const c = COW_CATALOG.find(x => x.id === mid);
+            html += `<div class="item-row"><span style="font-size:8px;color:#00ffff;">${c ? c.milkName : mid} (x${qty})</span></div>`;
+        }
+    });
+    Object.keys(state.bag.fruits).forEach(fid => {
+        const qty = state.bag.fruits[fid];
+        if (qty > 0) {
+            const f = FRUIT_CATALOG.find(x => x.id === fid);
+            html += `<div class="item-row"><span style="font-size:8px;color:#00ff66;">${f ? f.name : fid} (x${qty})</span></div>`;
+        }
+    });
+    if ((state.bag.crystals || 0) > 0) {
+        html += `<div class="item-row"><span style="font-size:8px;color:#cc44ff;">KRISTAL CEVHERI (x${state.bag.crystals})</span></div>`;
+    }
+    if (state.bag.crafted.antidote > 0) {
+        html += `<div class="item-row"><span style="font-size:8px;color:#ffff00;">PANZEHIR (x${state.bag.crafted.antidote})</span><button onclick="doDrinkAntidote()" class="ut-btn ut-btn-green">IC</button></div>`;
+    }
+    if (!html) html = '<div style="font-size:8px;color:#888;">Cantan bos.</div>';
+    showMenu('* CANTA', html);
+}
+
+window.doDrinkAntidote = function() {
+    if (state.bag.crafted.antidote <= 0) return;
+    state.bag.crafted.antidote--; state.poisoned = false;
+    document.getElementById('poison-vignette').style.display = 'none';
+    sfx.playHeal(); updateHUD(); saveSlot(activeSlotIndex, state); openBagMenu();
+};
+
+function updateHUD() {
+    document.getElementById('hud-name').innerText = state.name;
+    document.getElementById('hud-gold').innerText = state.gold.toLocaleString('tr-TR');
+    document.getElementById('hud-hp-num').innerText = `${Math.ceil(state.hp)}/${state.maxHp}`;
+    document.getElementById('hud-hp-fill').style.width = `${(state.hp / state.maxHp) * 100}%`;
+    document.getElementById('hud-planet-tag').innerText = `[${PLANETS[state.planet].name}]`;
+    const timerEl = document.getElementById('hud-restock-timer');
+    if (timerEl) timerEl.innerText = `${getRemainingRestockSec()}s`;
+}
+
+function setQuest(txt) { document.getElementById('quest-text').innerText = txt; }
+
+const joyArea = document.getElementById('joy-area');
+const joyKnob = document.getElementById('joy-knob');
+let joyVec = { x: 0, y: 0 }, activeTouchId = null;
+
+function handleJoyMove(touch) {
+    const rect = joyArea.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+    let dx = touch.clientX - cx, dy = touch.clientY - cy;
+    const dist = Math.hypot(dx, dy), maxR = 34;
+    if (dist > maxR) { dx = (dx / dist) * maxR; dy = (dy / dist) * maxR; }
+    joyKnob.style.transform = `translate(${Math.round(dx)}px, ${Math.round(dy)}px)`;
+    joyVec.x = dx / maxR; joyVec.y = dy / maxR;
+}
+
+joyArea.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.changedTouches[0]; activeTouchId = t.identifier; handleJoyMove(t); }, { passive: false });
+joyArea.addEventListener('touchmove', (e) => { e.preventDefault(); for (let i = 0; i < e.changedTouches.length; i++) if (e.changedTouches[i].identifier === activeTouchId) handleJoyMove(e.changedTouches[i]); }, { passive: false });
+const stopJoy = (e) => { for (let i = 0; i < e.changedTouches.length; i++) if (e.changedTouches[i].identifier === activeTouchId) { activeTouchId = null; joyVec = { x: 0, y: 0 }; joyKnob.style.transform = 'translate(0px, 0px)'; } };
+joyArea.addEventListener('touchend', stopJoy);
+
+let currentTrigger = null;
+document.getElementById('btn-z').addEventListener('click', () => { if (currentTrigger) currentTrigger.onTrigger(); });
+document.getElementById('btn-x').addEventListener('click', openBagMenu);
+document.getElementById('btn-m').addEventListener('click', openMapMenu);
+document.getElementById('btn-hud-map').addEventListener('click', openMapMenu);
+document.getElementById('btn-hud-upgrades').addEventListener('click', openEasyUpgradesMenu);
+document.getElementById('btn-hud-ach').addEventListener('click', openAchievementsMenu);
+document.getElementById('btn-hud-pet').addEventListener('click', openPetShopMenu);
+document.getElementById('btn-hud-cocop').addEventListener('click', openCocopMenu);
+document.getElementById('btn-hud-save').addEventListener('click', () => saveSlot(activeSlotIndex, state, true));
+document.getElementById('btn-hud-mute').addEventListener('click', () => sfx.toggleMute());
+document.getElementById('btn-hud-menu').addEventListener('click', () => {
+    saveSlot(activeSlotIndex, state);
+    document.getElementById('top-hud').style.display = 'none';
+    document.getElementById('quest-strip').style.display = 'none';
+    document.getElementById('mobile-controls').style.display = 'none';
+    document.getElementById('title-screen').style.display = 'flex';
+    renderSaveSlotsUI();
+});
+
+document.getElementById('btn-ending-continue').addEventListener('click', () => { document.getElementById('ending-overlay').style.display = 'none'; });
+document.getElementById('btn-ending-slots').addEventListener('click', () => {
+    document.getElementById('ending-overlay').style.display = 'none';
+    document.getElementById('top-hud').style.display = 'none';
+    document.getElementById('quest-strip').style.display = 'none';
+    document.getElementById('mobile-controls').style.display = 'none';
+    document.getElementById('title-screen').style.display = 'flex';
+    renderSaveSlotsUI();
+});
+
+let prevTime = performance.now(), walkPhase = 0, poisonTick = 0, autoMilkTick = 0, restockUiTick = 0;
+
+function animate(now) {
+    requestAnimationFrame(animate);
+    const dt = Math.min((now - prevTime) / 1000, 0.1);
+    prevTime = now;
+
+    if (document.getElementById('title-screen').style.display === 'none') {
+        if (!state.stocks) state.stocks = generateFreshStocks();
+        if (Date.now() - state.stocks.lastReset >= RESTOCK_INTERVAL_MS) {
+            resetAllStocks(false);
+        }
+        restockUiTick += dt;
+        if (restockUiTick >= 1.0) {
+            restockUiTick = 0;
+            const timerEl = document.getElementById('hud-restock-timer');
+            if (timerEl) timerEl.innerText = `${getRemainingRestockSec()}s`;
+        }
+    }
+
+    const mag = Math.hypot(joyVec.x, joyVec.y);
+    if (mag > 0.1) {
+        const spd = state.poisoned ? 3.6 : 6.4;
+        playerObj.position.x += joyVec.x * spd * dt;
+        playerObj.position.z += joyVec.y * spd * dt;
+        resolvePlayerCollisions(0.55);
+        playerObj.rotation.y = Math.atan2(joyVec.x, joyVec.y);
+        walkPhase += dt * 14;
+        const swing = Math.sin(walkPhase) * 0.55;
+        if (legL) { legL.rotation.x = swing; legR.rotation.x = -swing; }
+        sfx.stepCooldown = (sfx.stepCooldown || 0) + dt;
+        if (sfx.stepCooldown > 0.3) { sfx.stepCooldown = 0; sfx.playStep(); }
+    }
+
+    camera.position.x += (playerObj.position.x - camera.position.x) * 6 * dt;
+    camera.position.y += (11.0 - camera.position.y) * 6 * dt;
+    camera.position.z += (playerObj.position.z + 11.4 - camera.position.z) * 6 * dt;
+    camera.lookAt(playerObj.position.x, 1.1, playerObj.position.z - 1.5);
+
+    let found = null;
+    for (const zt of zoneTriggers) {
+        if (Math.hypot(playerObj.position.x - zt.x, playerObj.position.z - zt.z) <= zt.radius) { found = zt; break; }
+    }
+    const zBtn = document.getElementById('btn-z');
+    if (found) { currentTrigger = found; zBtn.style.display = 'flex'; zBtn.innerText = found.btnText; }
+    else { currentTrigger = null; zBtn.style.display = 'none'; }
+
+    if (state.machines.auto_milker && state.planet !== 'alley') {
+        autoMilkTick += dt;
+        if (autoMilkTick >= 8.0) {
+            autoMilkTick = 0;
+            const randCow = state.cows[Math.floor(Math.random() * state.cows.length)];
+            if (randCow) state.bag.milks[randCow] = (state.bag.milks[randCow] || 0) + 1;
+        }
+    }
+
+    if (state.poisoned) {
+        poisonTick += dt;
+        if (poisonTick >= 2.2) { poisonTick = 0; state.hp = Math.max(1, state.hp - 1); updateHUD(); }
+    }
+
+    const t = now * 0.003;
+    for (const item of animEntities) {
+        if (item.kind === 'bob') { item.mesh.position.y = item.baseY + Math.sin(t + item.baseY) * 0.2; item.mesh.rotation.y += dt * 2.0; }
+        else if (item.kind === 'flame') { item.mesh.scale.y = 0.8 + Math.sin(now * 0.025) * 0.4; }
+    }
+    renderer.render(scene, camera);
+}
+
+function renderSaveSlotsUI() {
+    const container = document.getElementById('save-slots-container');
+    document.getElementById('new-name-panel').style.display = 'none';
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+        const slotData = loadSlot(i);
+        if (slotData) {
+            html += `<div class="slot-card"><div style="font-size:7.5px;">SLOT ${i+1}: ${slotData.name} (${slotData.gold}$)</div><div style="display:flex;gap:5px;"><button onclick="selectExistingSlot(${i})" class="ut-btn ut-btn-green">OYNA</button><button onclick="clearSaveSlot(${i})" class="ut-btn ut-btn-red">SIL</button></div></div>`;
+        } else {
+            html += `<div class="slot-card"><div style="font-size:8px;">SLOT ${i+1}: [BOS]</div><button onclick="promptNewSlot(${i})" class="ut-btn ut-btn-cyan">+ YENI</button></div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+window.promptNewSlot = function(slotIdx) {
+    sfx.init(); sfx.playSelect(); pendingNewSlot = slotIdx;
+    document.getElementById('selected-slot-label').innerText = `* SLOT ${slotIdx+1} ICIN ISIM:`;
+    document.getElementById('name-input').value = '';
+    document.getElementById('new-name-panel').style.display = 'block';
+};
+
+window.selectExistingSlot = function(slotIdx) {
+    const data = loadSlot(slotIdx);
+    if (!data) return;
+    activeSlotIndex = slotIdx;
+    startGameWithData(data);
+};
+
+window.clearSaveSlot = function(slotIdx) {
+    deleteSlot(slotIdx); renderSaveSlotsUI(); showPixelToast(`* SLOT ${slotIdx+1} SILINDI!`);
+};
+
+let pendingNewSlot = 0;
+document.getElementById('btn-cancel-name').addEventListener('click', () => { document.getElementById('new-name-panel').style.display = 'none'; });
+document.getElementById('btn-confirm-start').addEventListener('click', () => {
+    const rawName = document.getElementById('name-input').value.trim().toUpperCase();
+    activeSlotIndex = pendingNewSlot;
+    const freshData = createDefaultState(rawName || `KASIF_${pendingNewSlot+1}`);
+    saveSlot(activeSlotIndex, freshData);
+    startGameWithData(freshData);
+});
+
+function startGameWithData(dataObj) {
+    sfx.init(); sfx.playSelect();
+    state = { ...createDefaultState('KASIF'), ...dataObj };
+    if (!state.stocks) state.stocks = generateFreshStocks();
+    state.interior = null;
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('top-hud').style.display = 'flex';
+    document.getElementById('quest-strip').style.display = 'block';
+    document.getElementById('mobile-controls').style.display = 'block';
+    document.getElementById('poison-vignette').style.display = state.poisoned ? 'block' : 'none';
+    buildPlayerVoxel();
+    loadPlanetScene(state.planet);
+    if (state.planet !== 'alley') playerObj.position.set(0, 0, 3);
+    updateHUD(); saveSlot(activeSlotIndex, state);
+}
+
+window.addEventListener('resize', updatePixelResolution);
+window.onload = () => {
+    drawSpriteToCanvas(document.getElementById('title-spr-1'), 'alien');
+    drawSpriteToCanvas(document.getElementById('title-spr-2'), 'rocket');
+    drawSpriteToCanvas(document.getElementById('rotate-sprite'), 'rocket');
+    renderSaveSlotsUI();
+    buildPlayerVoxel();
+    loadPlanetScene('alley');
+    requestAnimationFrame(animate);
+};
+</script>
+</body>
+</html>
